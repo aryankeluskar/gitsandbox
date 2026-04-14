@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import type { Env, CreateSandboxBody, DestroySandboxBody } from "./types";
-import { createSandbox, destroySandbox, getTerminalResponse } from "./sandbox";
+import { createSandbox, destroySandbox, proxyToOpenCode } from "./sandbox";
 import { InvalidRepoUrlError } from "./repo";
 
 export { Sandbox } from "@cloudflare/sandbox";
@@ -17,8 +17,9 @@ app.use(
       "https://gitsandbox-web.pages.dev",
       "http://localhost:3000",
     ],
-    allowMethods: ["GET", "POST", "OPTIONS"],
-    allowHeaders: ["Content-Type"],
+    allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Accept", "Cache-Control", "Last-Event-ID"],
+    exposeHeaders: ["Content-Type"],
   })
 );
 app.use("*", logger());
@@ -31,32 +32,13 @@ app.post("/sandbox/create", async (c) => {
   if (!body.repoUrl) {
     return c.json({ error: "repoUrl is required" }, 400);
   }
-  if (!body.agent || !["opencode", "pi"].includes(body.agent)) {
-    return c.json({ error: "agent must be 'opencode' or 'pi'" }, 400);
-  }
-
-  const envVars = body.env ?? {};
-  const hasApiKey = Object.keys(envVars).some(
-    (k) =>
-      k.includes("API_KEY") ||
-      k.includes("ANTHROPIC") ||
-      k.includes("OPENAI") ||
-      k.includes("GOOGLE")
-  );
-  if (!hasApiKey) {
-    return c.json(
-      { error: "At least one LLM provider API key is required in env" },
-      400
-    );
-  }
 
   try {
     const meta = await createSandbox(
       c.env,
       body.repoUrl,
       body.branch,
-      body.agent,
-      envVars
+      body.env ?? {}
     );
     return c.json(meta, 200);
   } catch (err) {
@@ -87,21 +69,23 @@ app.post("/sandbox/destroy", async (c) => {
   }
 });
 
-app.get("/ws/terminal", async (c) => {
-  const sandboxId = c.req.query("id");
-  if (!sandboxId) {
-    return c.json({ error: "id query parameter is required" }, 400);
-  }
+app.all("/oc/:sandboxId/*", async (c) => {
+  const sandboxId = c.req.param("sandboxId");
+  const fullPath = c.req.path;
+  const prefix = `/oc/${sandboxId}`;
+  const ocPath = fullPath.slice(prefix.length) || "/";
 
-  if (c.req.header("Upgrade")?.toLowerCase() !== "websocket") {
-    return c.json({ error: "WebSocket upgrade required" }, 426);
-  }
+  const search = new URL(c.req.url).search;
+  const pathWithQuery = ocPath + search;
 
   try {
-    return await getTerminalResponse(c.env, sandboxId, c.req.raw);
+    return await proxyToOpenCode(c.env, sandboxId, pathWithQuery, c.req.raw);
   } catch (err) {
-    console.error("ws/terminal error:", err);
-    return c.json({ error: "Sandbox not found" }, 404);
+    console.error("oc proxy error:", err);
+    return c.json(
+      { error: err instanceof Error ? err.message : "Proxy error" },
+      502
+    );
   }
 });
 

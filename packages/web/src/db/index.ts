@@ -3,7 +3,7 @@ import Dexie, { type EntityTable } from "dexie";
 export interface Session {
   id?: number;
   repoUrl: string;
-  agent: "opencode" | "pi";
+  agent: string;
   sandboxId: string;
   createdAt: Date;
   lastActiveAt: Date;

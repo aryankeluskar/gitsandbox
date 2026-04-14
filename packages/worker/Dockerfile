@@ -8,4 +8,6 @@ RUN npm install -g opencode-ai && \
     npm cache clean --force && \
     rm -rf /tmp/* /root/.npm
 
+EXPOSE 4096
+
 WORKDIR /workspace

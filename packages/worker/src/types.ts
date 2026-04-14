@@ -4,12 +4,9 @@ export type Env = {
   Sandbox: DurableObjectNamespace<SandboxDO>;
 };
 
-export type AgentChoice = "opencode" | "pi";
-
 export interface CreateSandboxBody {
   repoUrl: string;
   branch?: string;
-  agent: AgentChoice;
   env?: Record<string, string>;
 }
 
@@ -20,6 +17,6 @@ export interface DestroySandboxBody {
 export interface SandboxMeta {
   sandboxId: string;
   repoUrl: string;
-  agent: AgentChoice;
+  agent: "opencode";
   createdAt: string;
 }

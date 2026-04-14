@@ -1,17 +1,14 @@
 import { useState, useCallback } from "react";
 import { RepoInput } from "./components/RepoInput";
 import { RepoLanding } from "./components/RepoLanding";
-import { TerminalView } from "./components/TerminalView";
+import { ChatView } from "./components/ChatView";
 import { SessionSidebar } from "./components/SessionSidebar";
 import { SettingsPanel } from "./components/SettingsPanel";
-import { UsageBadge } from "./components/UsageBadge";
 import { useSandbox } from "./hooks/useSandbox";
-import { useSettings } from "./hooks/useSettings";
-import { useCredentialStatus } from "./hooks/useCredentialStatus";
+import { useOpenCode } from "./hooks/useOpenCode";
 import { getAllCredentials } from "./db/credentials";
 import { createSession, touchSession } from "./db/sessions";
 import { extractRepoFromPath, buildGitHubUrl } from "./lib/urlRepo";
-import type { AgentChoice } from "./hooks/useSettings";
 
 const SUGGESTED_REPOS = [
   { owner: "expressjs", repo: "express", label: "expressjs/express" },
@@ -22,8 +19,7 @@ const SUGGESTED_REPOS = [
 
 export default function App() {
   const sandbox = useSandbox();
-  const settings = useSettings();
-  const credentialStatus = useCredentialStatus();
+  const opencode = useOpenCode(sandbox.meta?.sandboxId ?? null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [activeSessionId, setActiveSessionId] = useState<number | undefined>();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -31,10 +27,9 @@ export default function App() {
   const handleStart = useCallback(
     async (repoUrl: string, branch: string) => {
       const creds = await getAllCredentials();
-      const agent = (settings.get("agent") as AgentChoice) || "opencode";
 
       try {
-        const meta = await sandbox.create({ repoUrl, branch, agent, env: creds });
+        const meta = await sandbox.create({ repoUrl, branch, env: creds });
         const session = await createSession({
           repoUrl: meta.repoUrl,
           agent: meta.agent,
@@ -45,7 +40,7 @@ export default function App() {
         // error surfaced via sandbox.error
       }
     },
-    [sandbox, settings]
+    [sandbox]
   );
 
   const handleSessionSelect = useCallback(
@@ -62,13 +57,18 @@ export default function App() {
   }
 
   const urlRepo = extractRepoFromPath(window.location.pathname);
-  const isTerminalVisible = sandbox.status === "active" && sandbox.meta;
+  const isChatActive = sandbox.status === "active" && sandbox.meta;
+  const repoLabel = urlRepo
+    ? `${urlRepo.owner}/${urlRepo.repo}`
+    : sandbox.meta?.repoUrl ?? "";
 
   return (
     <div className="flex h-screen flex-col bg-black text-zinc-100">
-      {/* Sidebar overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-30 bg-black/60" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 z-30 bg-black/60"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-[260px] border-r border-zinc-800/60 bg-black transition-transform ${
@@ -76,35 +76,58 @@ export default function App() {
         }`}
       >
         <div className="flex h-12 items-center justify-between px-4">
-          <a href="/" className="text-[14px] font-semibold tracking-tight text-zinc-200">
+          <a
+            href="/"
+            className="text-[14px] font-semibold tracking-tight text-zinc-200"
+          >
             <span className="text-emerald-400">git</span>sandbox
           </a>
-          <button onClick={() => setSidebarOpen(false)} className="rounded-md p-1 text-zinc-600 hover:text-zinc-300">
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="rounded-md p-1 text-zinc-600 hover:text-zinc-300"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            >
               <path d="M15 5L5 15M5 5l10 10" />
             </svg>
           </button>
         </div>
         <SessionSidebar
           activeSessionId={activeSessionId}
-          onSelect={(id, sid) => { handleSessionSelect(id, sid); setSidebarOpen(false); }}
+          onSelect={(id, sid) => {
+            handleSessionSelect(id, sid);
+            setSidebarOpen(false);
+          }}
           onNewSession={handleNewSession}
         />
       </aside>
 
-      {/* Header */}
       <header className="flex h-12 shrink-0 items-center justify-between border-b border-zinc-800/40 px-4">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(true)}
             className="rounded-md p-1.5 text-zinc-600 transition hover:bg-zinc-900 hover:text-zinc-300"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            >
               <path d="M2 4h12M2 8h12M2 12h12" />
             </svg>
           </button>
 
-          {/* Repo breadcrumb */}
           {(urlRepo || sandbox.meta) && (
             <RepoBreadcrumb
               owner={urlRepo?.owner ?? ""}
@@ -115,15 +138,16 @@ export default function App() {
           )}
 
           {!urlRepo && !sandbox.meta && (
-            <a href="/" className="text-[14px] font-semibold tracking-tight text-zinc-300">
+            <a
+              href="/"
+              className="text-[14px] font-semibold tracking-tight text-zinc-300"
+            >
               <span className="text-emerald-400">git</span>sandbox
             </a>
           )}
         </div>
 
         <div className="flex items-center gap-1.5">
-          <UsageBadge sessionId={activeSessionId} />
-
           {sandbox.status === "active" && (
             <button
               onClick={sandbox.destroy}
@@ -151,29 +175,32 @@ export default function App() {
             title="Settings"
           >
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-              <path d="M6.5 1.5h3l.5 2 1.5.8 2-.7 2.1 2.1-.7 2 .8 1.5 2 .5v3l-2 .5-1 1.5.7 2-2.1 2.1-2-.7-1.5.8-.5 2h-3l-.5-2-1.5-.8-2 .7L.4 13.6l.7-2-.8-1.5-2-.5v-3l2-.5.8-1.5-.7-2L2.5 .4l2 .7L6 .3l.5-2z" stroke="currentColor" strokeWidth="1.1" />
+              <path
+                d="M6.5 1.5h3l.5 2 1.5.8 2-.7 2.1 2.1-.7 2 .8 1.5 2 .5v3l-2 .5-1 1.5.7 2-2.1 2.1-2-.7-1.5.8-.5 2h-3l-.5-2-1.5-.8-2 .7L.4 13.6l.7-2-.8-1.5-2-.5v-3l2-.5.8-1.5-.7-2L2.5 .4l2 .7L6 .3l.5-2z"
+                stroke="currentColor"
+                strokeWidth="1.1"
+              />
               <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.1" />
             </svg>
           </button>
         </div>
       </header>
 
-      {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
-        {isTerminalVisible ? (
-          <div className="flex-1">
-            <TerminalView sandboxId={sandbox.meta!.sandboxId} />
-          </div>
+        {isChatActive ? (
+          <ChatView opencode={opencode} repoLabel={repoLabel} />
         ) : urlRepo ? (
           <RepoLanding
             owner={urlRepo.owner}
             repo={urlRepo.repo}
             branch={urlRepo.branch}
-            agent={(settings.get("agent") as AgentChoice) || "opencode"}
-            onAgentChange={(a) => settings.set("agent", a)}
-            credentialStatus={credentialStatus}
             onOpenSettings={() => setSettingsOpen(true)}
-            onStart={() => handleStart(buildGitHubUrl(urlRepo.owner, urlRepo.repo), urlRepo.branch)}
+            onStart={() =>
+              handleStart(
+                buildGitHubUrl(urlRepo.owner, urlRepo.repo),
+                urlRepo.branch
+              )
+            }
             loading={sandbox.status === "creating"}
             error={sandbox.error}
           />
@@ -198,9 +225,27 @@ function RepoBreadcrumb({
   branch: string;
   meta: { repoUrl: string; agent: string } | null;
 }) {
-  const displayOwner = meta ? (() => { try { return new URL(meta.repoUrl).pathname.split("/").filter(Boolean)[0]; } catch { return owner; } })() : owner;
-  const displayRepo = meta ? (() => { try { return new URL(meta.repoUrl).pathname.split("/").filter(Boolean)[1]; } catch { return repo; } })() : repo;
-  const githubUrl = meta?.repoUrl ?? `https://github.com/${owner}/${repo}`;
+  const displayOwner = meta
+    ? (() => {
+        try {
+          return new URL(meta.repoUrl).pathname.split("/").filter(Boolean)[0];
+        } catch {
+          return meta.repoUrl.split("/")[0] || owner;
+        }
+      })()
+    : owner;
+
+  const displayRepo = meta
+    ? (() => {
+        try {
+          return new URL(meta.repoUrl).pathname.split("/").filter(Boolean)[1];
+        } catch {
+          return meta.repoUrl.split("/")[1] || repo;
+        }
+      })()
+    : repo;
+
+  const githubUrl = `https://github.com/${displayOwner}/${displayRepo}`;
 
   return (
     <div className="flex items-center gap-2">
@@ -220,7 +265,7 @@ function RepoBreadcrumb({
         <span className="font-medium">{displayRepo}</span>
       </a>
       <span className="rounded bg-zinc-800/80 px-1.5 py-0.5 font-mono text-[10px] text-zinc-500">
-        {meta?.agent ?? branch}
+        {branch}
       </span>
     </div>
   );
@@ -232,13 +277,17 @@ function HomePage() {
       <div className="animate-fade-in w-full max-w-xl">
         <div className="mb-10 text-center">
           <h2 className="mb-3 text-2xl font-semibold tracking-tight">
-            Let's build
+            Let&apos;s build
           </h2>
           <p className="mx-auto max-w-sm text-[14px] leading-relaxed text-zinc-500">
             Replace{" "}
-            <code className="rounded bg-zinc-900 px-1.5 py-0.5 text-[13px] text-zinc-400">github.com</code>{" "}
+            <code className="rounded bg-zinc-900 px-1.5 py-0.5 text-[13px] text-zinc-400">
+              github.com
+            </code>{" "}
             with{" "}
-            <code className="rounded bg-zinc-900 px-1.5 py-0.5 text-[13px] text-emerald-400">github.soy.run</code>{" "}
+            <code className="rounded bg-zinc-900 px-1.5 py-0.5 text-[13px] text-emerald-400">
+              github.soy.run
+            </code>{" "}
             in any GitHub URL
           </p>
         </div>
@@ -248,10 +297,17 @@ function HomePage() {
             try {
               const url = new URL(_repoUrl);
               const parts = url.pathname.split("/").filter(Boolean);
-              if (parts.length >= 2) { window.location.href = `/${parts[0]}/${parts[1]}`; return; }
-            } catch { /* try as owner/repo */ }
+              if (parts.length >= 2) {
+                window.location.href = `/${parts[0]}/${parts[1]}`;
+                return;
+              }
+            } catch {
+              /* try as owner/repo */
+            }
             const segments = _repoUrl.split("/").filter(Boolean);
-            if (segments.length >= 2) { window.location.href = `/${segments[0]}/${segments[1]}`; }
+            if (segments.length >= 2) {
+              window.location.href = `/${segments[0]}/${segments[1]}`;
+            }
           }}
           disabled={false}
         />
@@ -274,7 +330,16 @@ function HomePage() {
         </div>
 
         <p className="mt-12 text-center text-[11px] leading-relaxed text-zinc-700">
-          API keys stored only in this browser. Nothing leaves your machine until you start a session.
+          Powered by{" "}
+          <a
+            href="https://opencode.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-zinc-500 hover:text-zinc-400"
+          >
+            OpenCode
+          </a>
+          . Authenticate with Copilot, Codex, or API keys inside the session.
         </p>
       </div>
     </div>

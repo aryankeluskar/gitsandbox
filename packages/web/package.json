@@ -16,10 +16,7 @@
     "react-dom": "^19",
     "react-router-dom": "^7",
     "dexie": "^4",
-    "dexie-react-hooks": "^1",
-    "@xterm/xterm": "^5",
-    "@xterm/addon-fit": "^0.10",
-    "@cloudflare/sandbox": "^0.7.0"
+    "dexie-react-hooks": "^1"
   },
   "devDependencies": {
     "@types/react": "^19",
