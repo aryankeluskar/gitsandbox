@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { SandboxAddon } from "@cloudflare/sandbox/xterm";
+import { buildTerminalWsUrl } from "../lib/api";
 
 export type TerminalState =
   | "disconnected"
@@ -44,10 +45,7 @@ export function useTerminal({
     terminal.loadAddon(fitAddon);
 
     const sandboxAddon = new SandboxAddon({
-      getWebSocketUrl: ({ sandboxId: id }) => {
-        const proto = location.protocol === "https:" ? "wss:" : "ws:";
-        return `${proto}//${location.host}/ws/terminal?id=${encodeURIComponent(id)}`;
-      },
+      getWebSocketUrl: ({ sandboxId: id }) => buildTerminalWsUrl(id),
       onStateChange: (state, error) => {
         const mapped: TerminalState =
           state === "connected"

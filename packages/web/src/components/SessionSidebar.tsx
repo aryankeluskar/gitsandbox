@@ -4,6 +4,7 @@ import { db } from "../db";
 interface SessionSidebarProps {
   activeSessionId?: number;
   onSelect: (sessionId: number, sandboxId: string) => void;
+  onNewSession: () => void;
 }
 
 function timeAgo(date: Date): string {
@@ -14,44 +15,89 @@ function timeAgo(date: Date): string {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
-export function SessionSidebar({ activeSessionId, onSelect }: SessionSidebarProps) {
+function repoLabel(repoUrl: string): string {
+  try {
+    const url = new URL(repoUrl);
+    return url.pathname.slice(1);
+  } catch {
+    return repoUrl;
+  }
+}
+
+export function SessionSidebar({
+  activeSessionId,
+  onSelect,
+  onNewSession,
+}: SessionSidebarProps) {
   const sessions = useLiveQuery(
     () => db.sessions.orderBy("lastActiveAt").reverse().toArray(),
     []
   );
 
-  if (!sessions?.length) {
-    return (
-      <div className="p-4 text-sm text-zinc-500">
-        No previous sessions
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-1 p-2">
-      <h2 className="px-2 py-1 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-        History
-      </h2>
-      {sessions.map((s) => (
+    <div className="flex h-full flex-col">
+      <div className="p-3">
         <button
-          key={s.id}
-          onClick={() => onSelect(s.id!, s.sandboxId)}
-          className={`rounded-md px-3 py-2 text-left transition ${
-            s.id === activeSessionId
-              ? "bg-zinc-800 text-zinc-100"
-              : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
-          }`}
+          onClick={onNewSession}
+          className="flex w-full items-center gap-2 rounded-lg border border-zinc-800 px-3 py-2.5 text-sm text-zinc-300 transition hover:border-zinc-700 hover:bg-zinc-900 hover:text-zinc-100"
         >
-          <div className="truncate text-sm font-medium">{s.repoUrl}</div>
-          <div className="mt-0.5 flex items-center gap-2 text-xs text-zinc-500">
-            <span className="rounded bg-zinc-800 px-1.5 py-0.5">
-              {s.agent}
-            </span>
-            <span>{timeAgo(s.lastActiveAt)}</span>
-          </div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <path d="M8 3v10M3 8h10" />
+          </svg>
+          New Session
         </button>
-      ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-2">
+        {sessions?.length ? (
+          <>
+            <h2 className="px-2 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-widest text-zinc-600">
+              Sessions
+            </h2>
+            <div className="flex flex-col gap-0.5">
+              {sessions.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => onSelect(s.id!, s.sandboxId)}
+                  className={`group rounded-lg px-3 py-2 text-left transition ${
+                    s.id === activeSessionId
+                      ? "bg-zinc-800/80 text-zinc-100"
+                      : "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200"
+                  }`}
+                >
+                  <div className="truncate text-[13px] font-medium">
+                    {repoLabel(s.repoUrl)}
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 text-[11px] text-zinc-600">
+                    <span className="rounded bg-zinc-800/80 px-1.5 py-0.5 font-mono text-[10px] uppercase">
+                      {s.agent}
+                    </span>
+                    <span>{timeAgo(s.lastActiveAt)}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="px-3 pt-6 text-center text-[13px] text-zinc-600">
+            No local sessions yet
+          </div>
+        )}
+      </div>
+
+      <div className="border-t border-zinc-800/60 p-3">
+        <a
+          href="https://github.com/aryankeluskar/gitsandbox"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-[12px] text-zinc-600 transition hover:text-zinc-400"
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+          </svg>
+          GitHub
+        </a>
+      </div>
     </div>
   );
 }

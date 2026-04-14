@@ -35,9 +35,9 @@ export function UsageBadge({ sessionId }: UsageBadgeProps) {
   );
 
   return (
-    <div className="flex items-center gap-3 rounded-md bg-zinc-800/50 px-3 py-1.5 text-xs text-zinc-400">
-      <span>{totalTokens.toLocaleString()} tokens</span>
-      <span className="text-zinc-600">|</span>
+    <div className="flex items-center gap-2 rounded-lg bg-zinc-900/50 px-2.5 py-1 text-[11px] font-medium text-zinc-500">
+      <span>{totalTokens.toLocaleString()} tok</span>
+      <span className="text-zinc-700">/</span>
       <span>{formatCost(totalCost)}</span>
     </div>
   );

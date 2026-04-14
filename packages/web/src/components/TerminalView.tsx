@@ -13,11 +13,11 @@ const STATE_LABELS: Record<TerminalState, string> = {
   error: "Connection Error",
 };
 
-const STATE_COLORS: Record<TerminalState, string> = {
+const STATE_DOT: Record<TerminalState, string> = {
   disconnected: "bg-zinc-500",
-  connecting: "bg-yellow-500",
-  connected: "bg-green-500",
-  error: "bg-red-500",
+  connecting: "bg-amber-400 animate-pulse",
+  connected: "bg-emerald-400",
+  error: "bg-red-400",
 };
 
 export function TerminalView({ sandboxId }: TerminalViewProps) {
@@ -32,20 +32,18 @@ export function TerminalView({ sandboxId }: TerminalViewProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b border-zinc-800 bg-zinc-950 px-4 py-2">
-        <span
-          className={`h-2 w-2 rounded-full ${STATE_COLORS[state]}`}
-        />
-        <span className="text-xs text-zinc-400">
+      <div className="flex items-center gap-2 border-b border-zinc-800/60 bg-zinc-950 px-4 py-2">
+        <span className={`h-1.5 w-1.5 rounded-full ${STATE_DOT[state]}`} />
+        <span className="text-[11px] font-medium text-zinc-500">
           {STATE_LABELS[state]}
         </span>
         {sandboxId && (
-          <span className="ml-auto font-mono text-xs text-zinc-600">
+          <span className="ml-auto font-mono text-[11px] text-zinc-700">
             {sandboxId.slice(0, 8)}
           </span>
         )}
       </div>
-      <div ref={containerRef} className="flex-1 bg-[#0a0a0a] p-1" />
+      <div ref={containerRef} className="flex-1 bg-[#09090b] p-1" />
     </div>
   );
 }

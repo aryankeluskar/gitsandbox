@@ -9,7 +9,18 @@ export { Sandbox } from "@cloudflare/sandbox";
 
 const app = new Hono<{ Bindings: Env }>();
 
-app.use("*", cors());
+app.use(
+  "*",
+  cors({
+    origin: [
+      "https://github.soy.run",
+      "https://gitsandbox-web.pages.dev",
+      "http://localhost:3000",
+    ],
+    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowHeaders: ["Content-Type"],
+  })
+);
 app.use("*", logger());
 
 app.get("/health", (c) => c.json({ ok: true, ts: Date.now() }));

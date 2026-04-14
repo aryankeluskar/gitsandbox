@@ -4,10 +4,11 @@ import { parseRepoUrl, InvalidRepoUrlError } from "../lib/parseRepoUrl";
 interface RepoInputProps {
   onSubmit: (repoUrl: string, branch: string) => void;
   disabled?: boolean;
+  initialValue?: string;
 }
 
-export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
-  const [url, setUrl] = useState("");
+export function RepoInput({ onSubmit, disabled, initialValue }: RepoInputProps) {
+  const [url, setUrl] = useState(initialValue ?? "");
   const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(e: FormEvent) {
@@ -27,26 +28,45 @@ export function RepoInput({ onSubmit, disabled }: RepoInputProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl">
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://github.com/owner/repo or owner/repo"
-          disabled={disabled}
-          className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-zinc-100 placeholder-zinc-500 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
-        />
-        <button
-          type="submit"
-          disabled={disabled || !url.trim()}
-          className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600"
-        >
-          {disabled ? "Starting..." : "Start"}
-        </button>
+    <form onSubmit={handleSubmit} className="w-full max-w-xl">
+      <div className="relative">
+        <div className="flex items-center rounded-xl border border-zinc-800 bg-zinc-900/50 transition-colors focus-within:border-zinc-700 focus-within:bg-zinc-900">
+          <div className="pl-4 text-zinc-600">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" className="opacity-60">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="owner/repo or paste a GitHub URL"
+            disabled={disabled}
+            className="flex-1 bg-transparent px-3 py-3.5 text-[14px] text-zinc-100 placeholder-zinc-600 outline-none disabled:opacity-50"
+          />
+          <div className="pr-2">
+            <button
+              type="submit"
+              disabled={disabled || !url.trim()}
+              className="rounded-lg bg-zinc-100 px-4 py-2 text-[13px] font-medium text-zinc-900 transition hover:bg-white disabled:opacity-40 disabled:hover:bg-zinc-100"
+            >
+              {disabled ? (
+                <span className="flex items-center gap-2">
+                  <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
+                    <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                  </svg>
+                  Starting
+                </span>
+              ) : (
+                "Start"
+              )}
+            </button>
+          </div>
+        </div>
       </div>
       {error && (
-        <p className="mt-2 text-sm text-red-400">{error}</p>
+        <p className="mt-2 text-[13px] text-red-400">{error}</p>
       )}
     </form>
   );
