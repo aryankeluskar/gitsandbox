@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useSettings, type AgentChoice } from "../hooks/useSettings";
 import {
   getAllCredentials,
   setCredential,
@@ -19,7 +18,6 @@ const CREDENTIAL_KEYS = [
 ];
 
 export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
-  const settings = useSettings();
   const [creds, setCreds] = useState<Record<string, string>>({});
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState<Record<string, boolean>>({});
@@ -85,28 +83,6 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto px-6 py-5">
-            {/* Agent selector */}
-            <div className="mb-8">
-              <h3 className="mb-3 text-[12px] font-semibold uppercase tracking-widest text-zinc-500">
-                Agent
-              </h3>
-              <div className="flex gap-2">
-                {(["opencode", "pi"] as const).map((a) => (
-                  <button
-                    key={a}
-                    onClick={() => settings.set("agent", a)}
-                    className={`rounded-lg px-4 py-2 text-[13px] font-medium transition ${
-                      settings.get("agent") === a
-                        ? "bg-zinc-100 text-zinc-900"
-                        : "border border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
-                    }`}
-                  >
-                    {a === "opencode" ? "OpenCode" : "Pi"}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* API Keys */}
             <div>
               <h3 className="mb-1 text-[12px] font-semibold uppercase tracking-widest text-zinc-500">

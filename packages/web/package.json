@@ -12,23 +12,30 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@mariozechner/pi-agent-core": "^0.67.2",
+    "@mariozechner/pi-ai": "^0.67.2",
+    "@sinclair/typebox": "^0.34.49",
+    "dexie": "^4",
+    "dexie-react-hooks": "^1",
+    "just-bash": "^2.14.2",
     "react": "^19",
     "react-dom": "^19",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7",
-    "dexie": "^4",
-    "dexie-react-hooks": "^1"
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4",
     "autoprefixer": "^10",
+    "jsdom": "^26",
     "postcss": "^8",
     "tailwindcss": "^4",
-    "@tailwindcss/vite": "^4",
     "typescript": "^5",
     "vite": "^6",
-    "vitest": "^3",
-    "jsdom": "^26"
+    "vite-plugin-node-polyfills": "^0.26.0",
+    "vitest": "^3"
   }
 }

@@ -16,7 +16,7 @@ function formatToolName(name: string): string {
 function extractSummary(
   name: string,
   args?: Record<string, unknown>,
-  result?: unknown
+  _result?: unknown
 ): string {
   const shortName = formatToolName(name);
 
@@ -67,46 +67,32 @@ export function ToolCard({
   const summary = extractSummary(toolName, args, result);
   const resultText = resultToString(result);
 
-  const statusColor = isError
-    ? "text-red-400"
+  const statusDot = isError
+    ? "bg-red-500"
     : isRunning
-      ? "text-amber-400"
-      : "text-emerald-400";
-
-  const statusLabel = isError
-    ? "Error"
-    : isRunning
-      ? "Running"
-      : "Completed";
+      ? "bg-amber-400 animate-pulse"
+      : "bg-emerald-500";
 
   return (
-    <div className="mb-2 overflow-hidden rounded-lg border border-zinc-800/60 bg-zinc-900/30">
+    <div
+      className={`overflow-hidden rounded-xl border bg-zinc-900/40 transition-all duration-300 ease-smooth ${
+        isError
+          ? "border-red-900/50"
+          : isRunning
+            ? "border-amber-900/40"
+            : "border-zinc-800/70"
+      } hover:border-zinc-700/80`}
+    >
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition hover:bg-zinc-800/30"
+        className="press focus-ring flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left hover:bg-zinc-800/30"
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0 text-zinc-500">
-          <path d="M3 2h4l1 2h5a1 1 0 011 1v7a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.2" />
-        </svg>
-        <span className="text-[13px] font-medium text-zinc-300">
+        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusDot}`} />
+        <span className="text-[12.5px] font-medium text-zinc-200">
           {displayName}
         </span>
-        <span className={`flex items-center gap-1 text-[11px] font-medium ${statusColor}`}>
-          {!isRunning && !isError && (
-            <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0a8 8 0 110 16A8 8 0 018 0zm3.41 5.59a1 1 0 00-1.41 0L7 8.59 5.41 7a1 1 0 10-1.41 1.41l2.29 2.3a1 1 0 001.41 0l3.71-3.71a1 1 0 000-1.41z" />
-            </svg>
-          )}
-          {isRunning && (
-            <svg className="h-2.5 w-2.5 animate-spin" viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" className="opacity-20" />
-              <path d="M2 8a6 6 0 016-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          )}
-          {statusLabel}
-        </span>
         {summary && (
-          <span className="ml-auto truncate text-[12px] text-zinc-600 max-w-[300px]">
+          <span className="flex-1 truncate font-mono text-[12px] text-zinc-500">
             {summary}
           </span>
         )}
@@ -115,37 +101,50 @@ export function ToolCard({
           height="12"
           viewBox="0 0 16 16"
           fill="none"
-          className={`shrink-0 text-zinc-600 transition-transform ${expanded ? "rotate-90" : ""}`}
+          className={`shrink-0 text-zinc-500 transition-transform duration-300 ease-smooth ${
+            expanded ? "rotate-90" : ""
+          }`}
         >
-          <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path
+            d="M6 4l4 4-4 4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
         </svg>
       </button>
 
-      {expanded && (
-        <div className="border-t border-zinc-800/40 px-3 py-2.5">
-          {args && (
-            <div className="mb-2">
-              <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-zinc-600">
-                Input
+      <div
+        className={`grid transition-all duration-300 ease-smooth ${
+          expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="border-t border-zinc-800/60 px-3.5 py-3">
+            {args && (
+              <div className="mb-3">
+                <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Input
+                </div>
+                <pre className="max-h-40 overflow-auto rounded-md bg-zinc-950/80 p-2.5 text-[12px] leading-relaxed text-zinc-400 ring-1 ring-zinc-800/60">
+                  {JSON.stringify(args, null, 2)}
+                </pre>
               </div>
-              <pre className="max-h-40 overflow-auto rounded bg-zinc-950/60 p-2 text-[12px] text-zinc-400">
-                {JSON.stringify(args, null, 2)}
-              </pre>
-            </div>
-          )}
-          {resultText && (
-            <div>
-              <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-zinc-600">
-                Output
+            )}
+            {resultText && (
+              <div>
+                <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Output
+                </div>
+                <pre className="max-h-60 overflow-auto whitespace-pre-wrap rounded-md bg-zinc-950/80 p-2.5 text-[12px] leading-relaxed text-zinc-400 ring-1 ring-zinc-800/60">
+                  {resultText.slice(0, 5000)}
+                  {resultText.length > 5000 && "\n... (truncated)"}
+                </pre>
               </div>
-              <pre className="max-h-60 overflow-auto rounded bg-zinc-950/60 p-2 text-[12px] text-zinc-400 whitespace-pre-wrap">
-                {resultText.slice(0, 5000)}
-                {resultText.length > 5000 && "\n... (truncated)"}
-              </pre>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

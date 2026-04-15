@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import type { ChatStatus } from "../hooks/useOpenCode";
+import type { ChatStatus } from "../hooks/useAgent";
 
 interface ChatComposerProps {
   onSend: (text: string) => void;
@@ -50,9 +50,9 @@ export function ChatComposer({ onSend, onAbort, status, disabled }: ChatComposer
   }, []);
 
   return (
-    <div className="border-t border-zinc-800/40 bg-black/80 backdrop-blur-sm px-4 py-3">
+    <div className="border-t border-zinc-800/60 bg-zinc-950/90 backdrop-blur-md px-4 py-4">
       <div className="mx-auto flex max-w-3xl items-end gap-2">
-        <div className="relative flex-1">
+        <div className="relative flex-1 rounded-[20px] bg-zinc-900/70 shadow-soft shadow-inset-hair ring-1 ring-zinc-800 transition-[box-shadow,border-color] duration-200 focus-within:ring-emerald-600/40">
           <textarea
             ref={textareaRef}
             value={text}
@@ -64,36 +64,56 @@ export function ChatComposer({ onSend, onAbort, status, disabled }: ChatComposer
             placeholder="What would you like to know?"
             disabled={disabled}
             rows={1}
-            className="w-full resize-none rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-3 pr-12 text-[14px] text-zinc-100 placeholder-zinc-600 outline-none transition focus:border-zinc-700 disabled:opacity-40"
+            className="w-full resize-none rounded-[20px] bg-transparent px-4 py-3 pr-14 text-[14.5px] leading-relaxed text-zinc-100 placeholder-zinc-600 outline-none disabled:opacity-40"
           />
           <button
             onClick={handleSubmit}
             disabled={disabled || (!text.trim() && !isStreaming)}
-            className="absolute bottom-2 right-2 rounded-lg p-1.5 text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-300 disabled:opacity-30"
+            className="press focus-ring absolute bottom-2 right-2 grid h-9 w-9 place-items-center rounded-xl bg-zinc-800 text-zinc-200 hover:bg-emerald-600 hover:text-white disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-200"
+            aria-label={isStreaming ? "Stop" : "Send"}
           >
-            {isStreaming ? (
-              <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
-                <rect x="3" y="3" width="10" height="10" rx="1.5" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M8 14V2m0 0L3 7m5-5l5 5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
+            <span className="relative block h-[18px] w-[18px]">
+              <span
+                className="absolute inset-0 grid place-items-center transition-[opacity,transform,filter] duration-300"
+                style={{
+                  transitionTimingFunction: "cubic-bezier(0.2, 0, 0, 1)",
+                  opacity: isStreaming ? 0 : 1,
+                  transform: isStreaming ? "scale(0.25)" : "scale(1)",
+                  filter: isStreaming ? "blur(4px)" : "blur(0)",
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                  <path
+                    d="M8 14V2m0 0L3 7m5-5l5 5"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span
+                className="absolute inset-0 grid place-items-center transition-[opacity,transform,filter] duration-300"
+                style={{
+                  transitionTimingFunction: "cubic-bezier(0.2, 0, 0, 1)",
+                  opacity: isStreaming ? 1 : 0,
+                  transform: isStreaming ? "scale(1)" : "scale(0.25)",
+                  filter: isStreaming ? "blur(0)" : "blur(4px)",
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                  <rect x="3" y="3" width="10" height="10" rx="1.5" />
+                </svg>
+              </span>
+            </span>
           </button>
         </div>
       </div>
 
       {isStreaming && (
-        <p className="mt-2 text-center text-[11px] text-zinc-600">
+        <p className="mt-2 text-center text-[11px] text-zinc-500 animate-fade-in">
           Agent is working...{" "}
-          <button onClick={onAbort} className="text-zinc-500 underline hover:text-zinc-400">
+          <button onClick={onAbort} className="text-emerald-400 underline underline-offset-2 hover:text-emerald-300">
             Stop
           </button>
         </p>

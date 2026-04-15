@@ -1,4 +1,6 @@
-import type { OcMessage, OcPart } from "../lib/api";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import type { OcMessage, OcPart } from "../hooks/useAgent";
 import { ToolCard } from "./ToolCard";
 import { Reasoning } from "./Reasoning";
 
@@ -19,15 +21,6 @@ function findToolResult(
   return null;
 }
 
-function renderMarkdown(text: string): string {
-  return text
-    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="rounded bg-zinc-950/60 p-3 my-2 text-[12px] overflow-auto"><code>$2</code></pre>')
-    .replace(/`([^`]+)`/g, '<code class="rounded bg-zinc-900 px-1 py-0.5 text-[12px] text-zinc-300">$1</code>')
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/\n/g, "<br />");
-}
-
 export function ChatMessage({ message, allMessages }: ChatMessageProps) {
   const { info, parts } = message;
 
@@ -40,9 +33,9 @@ export function ChatMessage({ message, allMessages }: ChatMessageProps) {
       .join("\n");
 
     return (
-      <div className="flex justify-end px-4 py-3">
-        <div className="max-w-[85%] rounded-2xl bg-zinc-800 px-4 py-2.5 text-[14px] leading-relaxed text-zinc-100">
-          {text}
+      <div className="flex justify-end animate-fade-in-up">
+        <div className="max-w-[85%] rounded-2xl bg-zinc-800/90 px-4 py-2.5 text-[14.5px] leading-relaxed text-zinc-50 shadow-soft shadow-inset-hair ring-1 ring-zinc-700/50">
+          <div className="whitespace-pre-wrap">{text}</div>
         </div>
       </div>
     );
@@ -55,8 +48,8 @@ export function ChatMessage({ message, allMessages }: ChatMessageProps) {
   const toolCallParts = parts.filter((p) => p.type === "tool-call");
 
   return (
-    <div className="px-4 py-3">
-      <div className="max-w-[85%]">
+    <div className="animate-fade-in-up">
+      <div className="flex flex-col gap-2">
         {thinkingParts.map((p, i) => (
           <Reasoning
             key={`think-${i}`}
@@ -89,11 +82,11 @@ export function ChatMessage({ message, allMessages }: ChatMessageProps) {
         })}
 
         {textParts.map((p, i) => (
-          <div
-            key={`text-${i}`}
-            className="prose prose-sm prose-invert max-w-none text-[14px] leading-relaxed text-zinc-300"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(p.text || "") }}
-          />
+          <div key={`text-${i}`} className="md-body">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {p.text || ""}
+            </ReactMarkdown>
+          </div>
         ))}
       </div>
     </div>

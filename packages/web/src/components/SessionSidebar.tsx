@@ -3,7 +3,7 @@ import { db } from "../db";
 
 interface SessionSidebarProps {
   activeSessionId?: number;
-  onSelect: (sessionId: number, sandboxId: string) => void;
+  onSelect: (sessionId: number) => void;
   onNewSession: () => void;
 }
 
@@ -39,7 +39,7 @@ export function SessionSidebar({
       <div className="p-3">
         <button
           onClick={onNewSession}
-          className="flex w-full items-center gap-2 rounded-lg border border-zinc-800 px-3 py-2.5 text-sm text-zinc-300 transition hover:border-zinc-700 hover:bg-zinc-900 hover:text-zinc-100"
+          className="press focus-ring flex w-full items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 px-3 py-2.5 text-sm font-medium text-zinc-200 shadow-inset-hair hover:border-emerald-700/60 hover:bg-emerald-600/10 hover:text-emerald-300"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
             <path d="M8 3v10M3 8h10" />
@@ -54,15 +54,15 @@ export function SessionSidebar({
             <h2 className="px-2 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-widest text-zinc-600">
               Sessions
             </h2>
-            <div className="flex flex-col gap-0.5">
+            <div className="stagger flex flex-col gap-0.5">
               {sessions.map((s) => (
                 <button
                   key={s.id}
-                  onClick={() => onSelect(s.id!, s.sandboxId)}
-                  className={`group rounded-lg px-3 py-2 text-left transition ${
+                  onClick={() => onSelect(s.id!)}
+                  className={`press group rounded-lg px-3 py-2 text-left ${
                     s.id === activeSessionId
-                      ? "bg-zinc-800/80 text-zinc-100"
-                      : "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200"
+                      ? "bg-zinc-800 text-zinc-50 ring-1 ring-zinc-700/80"
+                      : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100"
                   }`}
                 >
                   <div className="truncate text-[13px] font-medium">
@@ -72,7 +72,7 @@ export function SessionSidebar({
                     <span className="rounded bg-zinc-800/80 px-1.5 py-0.5 font-mono text-[10px] uppercase">
                       {s.agent}
                     </span>
-                    <span>{timeAgo(s.lastActiveAt)}</span>
+                    <span className="tabular-nums">{timeAgo(s.lastActiveAt)}</span>
                   </div>
                 </button>
               ))}
