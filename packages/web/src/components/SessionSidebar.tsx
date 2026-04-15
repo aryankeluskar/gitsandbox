@@ -18,9 +18,18 @@ function timeAgo(date: Date): string {
 function repoLabel(repoUrl: string): string {
   try {
     const url = new URL(repoUrl);
-    return url.pathname.slice(1);
+    return url.pathname.replace(/^\//, "").replace(/\/$/, "");
   } catch {
     return repoUrl;
+  }
+}
+
+function repoPath(repoUrl: string): string {
+  try {
+    const url = new URL(repoUrl);
+    return url.pathname;
+  } catch {
+    return "/";
   }
 }
 
@@ -56,10 +65,16 @@ export function SessionSidebar({
             </h2>
             <div className="stagger flex flex-col gap-0.5">
               {sessions.map((s) => (
-                <button
+                <a
                   key={s.id}
-                  onClick={() => onSelect(s.id!)}
-                  className={`press group rounded-lg px-3 py-2 text-left ${
+                  href={repoPath(s.repoUrl)}
+                  onClick={(e) => {
+                    if (s.id === activeSessionId) {
+                      e.preventDefault();
+                      onSelect(s.id!);
+                    }
+                  }}
+                  className={`press group block rounded-lg px-3 py-2 text-left ${
                     s.id === activeSessionId
                       ? "bg-zinc-800 text-zinc-50 ring-1 ring-zinc-700/80"
                       : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100"
@@ -74,7 +89,7 @@ export function SessionSidebar({
                     </span>
                     <span className="tabular-nums">{timeAgo(s.lastActiveAt)}</span>
                   </div>
-                </button>
+                </a>
               ))}
             </div>
           </>

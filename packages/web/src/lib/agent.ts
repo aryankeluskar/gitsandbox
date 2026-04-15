@@ -23,6 +23,7 @@ function ensureBuiltins(): void {
 export type ProviderId =
   | "anthropic"
   | "openai"
+  | "openai-codex"
   | "google"
   | "openrouter"
   | "github-copilot";
@@ -34,6 +35,7 @@ export interface SupportedModel {
 }
 
 export const SUPPORTED_MODELS: SupportedModel[] = [
+  // GitHub Copilot (subscription)
   { provider: "github-copilot", modelId: "claude-sonnet-4.6", label: "Copilot · Claude Sonnet 4.6" },
   { provider: "github-copilot", modelId: "claude-sonnet-4.5", label: "Copilot · Claude Sonnet 4.5" },
   { provider: "github-copilot", modelId: "claude-haiku-4.5", label: "Copilot · Claude Haiku 4.5" },
@@ -41,6 +43,29 @@ export const SUPPORTED_MODELS: SupportedModel[] = [
   { provider: "github-copilot", modelId: "gpt-5-mini", label: "Copilot · GPT-5 Mini" },
   { provider: "github-copilot", modelId: "gpt-4.1", label: "Copilot · GPT-4.1" },
   { provider: "github-copilot", modelId: "gpt-4o", label: "Copilot · GPT-4o" },
+
+  // OpenAI Codex (ChatGPT Plus/Pro subscription)
+  { provider: "openai-codex", modelId: "gpt-5.4", label: "Codex · GPT-5.4" },
+  { provider: "openai-codex", modelId: "gpt-5.4-mini", label: "Codex · GPT-5.4 Mini" },
+  { provider: "openai-codex", modelId: "gpt-5.3-codex", label: "Codex · GPT-5.3" },
+
+  // Anthropic (API key)
+  { provider: "anthropic", modelId: "claude-sonnet-4-5", label: "Claude Sonnet 4.5" },
+  { provider: "anthropic", modelId: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
+  { provider: "anthropic", modelId: "claude-haiku-4-5", label: "Claude Haiku 4.5" },
+
+  // OpenAI (API key)
+  { provider: "openai", modelId: "gpt-5.4", label: "GPT-5.4" },
+  { provider: "openai", modelId: "gpt-5.4-mini", label: "GPT-5.4 Mini" },
+  { provider: "openai", modelId: "gpt-5-mini", label: "GPT-5 Mini" },
+
+  // Google (API key)
+  { provider: "google", modelId: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+  { provider: "google", modelId: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+
+  // OpenRouter (API key)
+  { provider: "openrouter", modelId: "anthropic/claude-sonnet-4.5", label: "OR · Claude Sonnet 4.5" },
+  { provider: "openrouter", modelId: "openai/gpt-5.4", label: "OR · GPT-5.4" },
 ];
 
 export const COPILOT_MODEL_PRIORITY: string[] = [
@@ -51,6 +76,12 @@ export const COPILOT_MODEL_PRIORITY: string[] = [
   "gpt-5-mini",
   "gpt-4.1",
   "gpt-4o",
+];
+
+export const CODEX_MODEL_PRIORITY: string[] = [
+  "gpt-5.4",
+  "gpt-5.4-mini",
+  "gpt-5.3-codex",
 ];
 
 export const DEFAULT_MODEL: SupportedModel = SUPPORTED_MODELS[2];

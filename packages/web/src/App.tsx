@@ -17,7 +17,6 @@ const SUGGESTED_REPOS = [
 
 export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [activeSessionId, setActiveSessionId] = useState<number | undefined>();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const urlRepo = useMemo(
@@ -54,7 +53,7 @@ export default function App() {
 
       {/* Sidebar — always visible on md+, drawer on mobile */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col border-r border-zinc-800/60 bg-zinc-900/40 backdrop-blur transition-transform duration-300 ease-smooth md:static md:translate-x-0 ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        className={`fixed inset-y-0 left-0 z-40 flex w-full flex-col border-r border-zinc-800/60 bg-zinc-900/40 backdrop-blur transition-transform duration-300 ease-smooth md:static md:w-[260px] md:translate-x-0 ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           }`}
       >
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-800/60 px-4">
@@ -62,7 +61,7 @@ export default function App() {
             href="/"
             className="text-[15px] font-semibold tracking-tight text-zinc-100"
           >
-            <span className="text-emerald-400">git</span>sandbox
+            <span className="text-emerald-400">git</span> sandbox
           </a>
           <button
             onClick={() => setMobileSidebarOpen(false)}
@@ -74,9 +73,8 @@ export default function App() {
           </button>
         </div>
         <SessionSidebar
-          activeSessionId={activeSessionId}
-          onSelect={(id) => {
-            setActiveSessionId(id);
+          activeSessionId={agent.sessionId}
+          onSelect={() => {
             setMobileSidebarOpen(false);
           }}
           onNewSession={handleNewSession}
@@ -206,7 +204,7 @@ function HomePage() {
             <code className="rounded bg-zinc-900 px-1.5 py-0.5 text-[13px] text-emerald-400">
               github.soy.run
             </code>{" "}
-            in any GitHub URL. Use your Claude / Codex / Copilot sub to instantly chat with the repo in your browser.
+            in any GitHub URL. Use your Claude, Codex or Copilot sub to instantly chat with the repo in your browser.
           </p>
         </div>
 

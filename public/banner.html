@@ -1,4 +1,4 @@
-<!-- DevHeroForge – GitSandbox Promotional Banner | Product Poster -->
+<!-- DevHeroForge – GitSandbox Promotional Banner -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +7,7 @@
   <title>GitSandbox Banner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -31,63 +31,98 @@
       align-items: center;
     }
 
-    /* ── Background ── */
-    .bg-base {
-      position: absolute;
-      inset: 0;
-      background: #08080e;
-    }
+    /* ── Backgrounds ── */
+    .bg-base { position: absolute; inset: 0; background: #08080e; }
 
     .bg-mesh {
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse 55% 55% at 15% 75%, rgba(16,185,129,0.13) 0%, transparent 70%),
-        radial-gradient(ellipse 45% 50% at 85% 25%, rgba(6,182,212,0.08) 0%, transparent 65%),
-        radial-gradient(ellipse 50% 40% at 50% 0%, rgba(52,211,153,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 55% at 15% 75%, rgba(16,185,129,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 45% 50% at 85% 25%, rgba(6,182,212,0.07) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 40% at 50% 0%, rgba(52,211,153,0.05) 0%, transparent 60%),
         radial-gradient(ellipse 70% 60% at 50% 100%, rgba(15,23,42,0.9) 0%, transparent 50%);
     }
 
     .bg-grain {
-      position: absolute;
-      inset: 0;
-      opacity: 0.03;
+      position: absolute; inset: 0; opacity: 0.025;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
     .bg-grid {
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+        linear-gradient(rgba(255,255,255,0.016) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.016) 1px, transparent 1px);
       background-size: 60px 60px;
       mask-image: radial-gradient(ellipse 70% 60% at 50% 55%, black 20%, transparent 70%);
       -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 55%, black 20%, transparent 70%);
     }
 
-    /* ── Headline ── */
+    /* ── URL swap headline ── */
     .headline-area {
       position: relative;
       z-index: 10;
       text-align: center;
-      padding-top: 58px;
-      margin-bottom: 42px;
+      padding-top: 52px;
+      margin-bottom: 18px;
     }
 
-    .headline {
-      font-size: 52px;
-      font-weight: 800;
-      letter-spacing: -0.035em;
-      line-height: 1.1;
-      color: #f0f0f0;
+    .url-swap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 46px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
     }
 
-    .headline .accent {
+    .url-swap .prefix {
+      color: #52525b;
+    }
+
+    .url-swap .old-domain {
+      color: #3f3f46;
+      text-decoration: line-through;
+      text-decoration-color: #ef4444;
+      text-decoration-thickness: 3px;
+      position: relative;
+    }
+
+    .url-swap .arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 20px;
+      color: #52525b;
+    }
+
+    .url-swap .new-domain {
       background: linear-gradient(135deg, #34d399 0%, #06b6d4 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+    }
+
+    .url-swap .path-part {
+      color: #71717a;
+      font-weight: 500;
+    }
+
+    .subtitle {
+      margin-top: 20px;
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 20px;
+      font-weight: 400;
+      color: #52525b;
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle em {
+      font-style: normal;
+      color: #71717a;
     }
 
     /* ── App mockup ── */
@@ -99,36 +134,37 @@
       justify-content: center;
       width: 100%;
       padding: 0 60px;
+      margin-top: 38px;
     }
 
     .mockup-glow {
       position: absolute;
       width: 900px;
       height: 500px;
-      top: 20px;
+      top: 10px;
       left: 50%;
       transform: translateX(-50%);
-      background: radial-gradient(ellipse, rgba(16,185,129,0.07) 0%, transparent 65%);
+      background: radial-gradient(ellipse, rgba(16,185,129,0.06) 0%, transparent 65%);
       pointer-events: none;
     }
 
     .mockup {
       position: relative;
-      width: 1060px;
+      width: 1080px;
       max-width: 100%;
       background: #111115;
       border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.07);
       box-shadow:
         0 4px 8px rgba(0,0,0,0.3),
         0 20px 60px rgba(0,0,0,0.5),
-        0 0 0 1px rgba(255,255,255,0.03);
+        0 0 0 1px rgba(255,255,255,0.02);
       overflow: hidden;
       display: flex;
       flex-direction: column;
     }
 
-    /* ── Window title bar ── */
+    /* ── Title bar ── */
     .titlebar {
       display: flex;
       align-items: center;
@@ -139,49 +175,33 @@
       gap: 8px;
     }
 
-    .traffic-lights {
-      display: flex;
-      gap: 7px;
-    }
-
-    .traffic-lights span {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-    }
-
+    .traffic-lights { display: flex; gap: 7px; }
+    .traffic-lights span { width: 11px; height: 11px; border-radius: 50%; }
     .tl-red { background: #ff5f57; }
     .tl-yellow { background: #febc2e; }
     .tl-green { background: #28c840; }
 
-    .titlebar-text {
+    .titlebar-url {
       flex: 1;
       text-align: center;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
       font-weight: 500;
       color: #555;
       letter-spacing: -0.01em;
     }
 
-    .titlebar-spacer {
-      width: 54px;
-    }
+    .titlebar-url .url-accent { color: #34d399; }
+    .titlebar-spacer { width: 54px; }
 
     /* ── App layout ── */
-    .app-body {
-      display: flex;
-      flex: 1;
-      min-height: 0;
-      height: 478px;
-    }
+    .app-body { display: flex; flex: 1; min-height: 0; height: 490px; }
 
     /* ── Sidebar ── */
     .sidebar {
       width: 220px;
       border-right: 1px solid rgba(255,255,255,0.05);
-      background: rgba(255,255,255,0.015);
-      display: flex;
-      flex-direction: column;
+      background: rgba(255,255,255,0.012);
       flex-shrink: 0;
     }
 
@@ -204,21 +224,20 @@
     .sidebar-brand .g { color: #34d399; }
 
     .sidebar-new-btn {
-      width: 26px;
-      height: 26px;
+      width: 26px; height: 26px;
       border-radius: 6px;
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.06);
       display: grid;
       place-items: center;
     }
 
-    .sidebar-section-label {
+    .sidebar-label {
       font-size: 10px;
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #52525b;
+      color: #3f3f46;
       padding: 14px 16px 6px;
     }
 
@@ -229,42 +248,35 @@
       padding: 8px 16px;
       font-size: 13px;
       color: #71717a;
-      border-radius: 6px;
       margin: 1px 6px;
+      border-radius: 6px;
     }
 
     .sidebar-item.active {
-      background: rgba(52,211,153,0.08);
+      background: rgba(52,211,153,0.07);
       color: #d4d4d8;
     }
 
-    .sidebar-item-icon {
-      width: 22px;
-      height: 22px;
+    .sidebar-icon {
+      width: 22px; height: 22px;
       border-radius: 5px;
+      background: #1a1a1e;
+      border: 1px solid rgba(255,255,255,0.07);
       display: grid;
       place-items: center;
       font-size: 10px;
+      color: #71717a;
       flex-shrink: 0;
     }
 
-    .sidebar-item-icon.vercel { background: #1a1a1e; border: 1px solid rgba(255,255,255,0.08); color: #a1a1aa; }
-    .sidebar-item-icon.deno { background: #1a1a1e; border: 1px solid rgba(255,255,255,0.08); color: #a1a1aa; }
-    .sidebar-item-icon.express { background: #1a1a1e; border: 1px solid rgba(255,255,255,0.08); color: #a1a1aa; }
-
-    .sidebar-item-text {
+    .sidebar-text {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    /* ── Main content area ── */
-    .main-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
+    /* ── Main area ── */
+    .main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
     .main-header {
       display: flex;
@@ -276,23 +288,17 @@
     }
 
     .repo-avatar {
-      width: 22px;
-      height: 22px;
+      width: 22px; height: 22px;
       border-radius: 5px;
       background: #27272a;
+      border: 1px solid rgba(255,255,255,0.06);
       display: grid;
       place-items: center;
       font-size: 11px;
       color: #a1a1aa;
-      border: 1px solid rgba(255,255,255,0.06);
     }
 
-    .repo-breadcrumb {
-      font-size: 13px;
-      color: #a1a1aa;
-      letter-spacing: -0.01em;
-    }
-
+    .repo-breadcrumb { font-size: 13px; color: #a1a1aa; }
     .repo-breadcrumb .owner { color: #71717a; }
     .repo-breadcrumb .sep { color: #3f3f46; margin: 0 1px; }
     .repo-breadcrumb .name { color: #d4d4d8; font-weight: 600; }
@@ -307,25 +313,21 @@
       font-family: 'JetBrains Mono', monospace;
     }
 
-    /* ── Chat area ── */
+    /* ── Chat ── */
     .chat-area {
       flex: 1;
-      padding: 24px 28px;
-      overflow: hidden;
+      padding: 22px 26px;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 16px;
+      overflow: hidden;
     }
 
-    .chat-msg {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-    }
+    .chat-msg { display: flex; gap: 12px; align-items: flex-start; }
+    .chat-msg.user-row { justify-content: flex-end; }
 
     .chat-avatar {
-      width: 28px;
-      height: 28px;
+      width: 28px; height: 28px;
       border-radius: 7px;
       display: grid;
       place-items: center;
@@ -341,8 +343,8 @@
     }
 
     .chat-avatar.agent {
-      background: rgba(52,211,153,0.12);
-      border: 1px solid rgba(52,211,153,0.18);
+      background: rgba(52,211,153,0.1);
+      border: 1px solid rgba(52,211,153,0.16);
       color: #34d399;
     }
 
@@ -350,21 +352,19 @@
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.05);
       border-radius: 12px;
-      border-top-left-radius: 4px;
-      padding: 12px 16px;
+      padding: 11px 16px;
       font-size: 13.5px;
       color: #d4d4d8;
-      line-height: 1.55;
-      max-width: 85%;
+      line-height: 1.5;
+      max-width: 82%;
     }
 
-    .chat-bubble.user-bubble {
-      border-top-left-radius: 12px;
+    .chat-bubble.from-user {
       border-top-right-radius: 4px;
     }
 
     .agent-response {
-      max-width: 90%;
+      max-width: 88%;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -383,8 +383,7 @@
     }
 
     .thinking-pill .dot {
-      width: 5px;
-      height: 5px;
+      width: 5px; height: 5px;
       border-radius: 50%;
       background: #34d399;
       opacity: 0.5;
@@ -396,7 +395,6 @@
       color: rgba(52,211,153,0.5);
     }
 
-    /* ── Code block ── */
     .code-block {
       border-radius: 10px;
       overflow: hidden;
@@ -422,6 +420,7 @@
       font-size: 12px;
       line-height: 1.7;
       color: #a1a1aa;
+      white-space: pre;
       overflow: hidden;
     }
 
@@ -451,8 +450,7 @@
 
     .cursor-blink {
       display: inline-block;
-      width: 7px;
-      height: 15px;
+      width: 7px; height: 15px;
       background: #34d399;
       border-radius: 1px;
       vertical-align: text-bottom;
@@ -465,89 +463,79 @@
       50%, 100% { opacity: 0; }
     }
 
-    /* ── Input bar ── */
     .input-bar {
-      margin: 0 28px 20px;
+      margin: 0 26px 18px;
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 12px 16px;
-      background: rgba(255,255,255,0.025);
+      padding: 11px 16px;
+      background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 12px;
     }
 
-    .input-bar .placeholder {
-      flex: 1;
-      font-size: 13px;
-      color: #3f3f46;
-    }
+    .input-placeholder { flex: 1; font-size: 13px; color: #3f3f46; }
 
-    .input-bar .send-btn {
-      width: 30px;
-      height: 30px;
+    .send-btn {
+      width: 30px; height: 30px;
       border-radius: 8px;
       background: #34d399;
       display: grid;
       place-items: center;
     }
 
-    /* ── Bottom fade for mockup ── */
-    .mockup-bottom-fade {
+    /* ── Bottom fade ── */
+    .bottom-fade {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 120px;
+      bottom: 0; left: 0; right: 0;
+      height: 100px;
       background: linear-gradient(transparent, #08080e);
       pointer-events: none;
       z-index: 15;
     }
 
-    /* ── Responsive (scale down on small screens) ── */
-    @media (max-width: 1500px) {
-      .banner { transform: scale(0.85); transform-origin: center center; }
-    }
-    @media (max-width: 1200px) {
-      .banner { transform: scale(0.7); transform-origin: center center; }
-    }
-    @media (max-width: 900px) {
-      .banner { transform: scale(0.5); transform-origin: center center; }
-    }
+    /* ── Responsive ── */
+    @media (max-width: 1500px) { .banner { transform: scale(0.85); transform-origin: center center; } }
+    @media (max-width: 1200px) { .banner { transform: scale(0.7); transform-origin: center center; } }
+    @media (max-width: 900px) { .banner { transform: scale(0.5); transform-origin: center center; } }
   </style>
 </head>
 <body>
 
 <div class="banner">
-  <!-- Background layers -->
   <div class="bg-base"></div>
   <div class="bg-mesh"></div>
   <div class="bg-grain"></div>
   <div class="bg-grid"></div>
 
-  <!-- Headline -->
+  <!-- ── Headline: the URL swap ── -->
   <div class="headline-area">
-    <h1 class="headline">
-      <span class="accent">Chat with any codebase</span>, instantly.
-    </h1>
+    <div class="url-swap">
+      <span class="prefix">github</span><span class="old-domain">.com</span>
+      <span class="arrow">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </span>
+      <span class="prefix">github</span><span class="new-domain">.soy.run</span>
+    </div>
+    <p class="subtitle">Use your <em>Claude, Codex or Copilot</em> sub to chat with any repo in your browser.</p>
   </div>
 
-  <!-- App mockup -->
+  <!-- ── App mockup ── -->
   <div class="mockup-wrapper">
     <div class="mockup-glow"></div>
     <div class="mockup">
-      <!-- macOS title bar -->
       <div class="titlebar">
         <div class="traffic-lights">
           <span class="tl-red"></span>
           <span class="tl-yellow"></span>
           <span class="tl-green"></span>
         </div>
-        <div class="titlebar-text">github.soy.run/vercel/next.js</div>
+        <div class="titlebar-url">
+          <span class="url-accent">github.soy.run</span>/vercel/next.js
+        </div>
         <div class="titlebar-spacer"></div>
       </div>
 
-      <!-- App body -->
       <div class="app-body">
         <!-- Sidebar -->
         <div class="sidebar">
@@ -557,26 +545,23 @@
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#71717a" stroke-width="1.8" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
             </div>
           </div>
-
-          <div class="sidebar-section-label">Sessions</div>
-
+          <div class="sidebar-label">Sessions</div>
           <div class="sidebar-item active">
-            <div class="sidebar-item-icon vercel">▲</div>
-            <div class="sidebar-item-text">vercel/next.js</div>
+            <div class="sidebar-icon">▲</div>
+            <div class="sidebar-text">vercel/next.js</div>
           </div>
           <div class="sidebar-item">
-            <div class="sidebar-item-icon deno">D</div>
-            <div class="sidebar-item-text">denoland/deno</div>
+            <div class="sidebar-icon">D</div>
+            <div class="sidebar-text">denoland/deno</div>
           </div>
           <div class="sidebar-item">
-            <div class="sidebar-item-icon express">E</div>
-            <div class="sidebar-item-text">expressjs/express</div>
+            <div class="sidebar-icon">E</div>
+            <div class="sidebar-text">expressjs/express</div>
           </div>
         </div>
 
-        <!-- Main area -->
+        <!-- Main -->
         <div class="main-area">
-          <!-- Repo header -->
           <div class="main-header">
             <div class="repo-avatar">▲</div>
             <div class="repo-breadcrumb">
@@ -585,15 +570,12 @@
             <div class="branch-pill">main</div>
           </div>
 
-          <!-- Chat -->
           <div class="chat-area">
-            <!-- User message -->
-            <div class="chat-msg" style="justify-content: flex-end;">
-              <div class="chat-bubble user-bubble">How does the App Router handle parallel routes?</div>
+            <div class="chat-msg user-row">
+              <div class="chat-bubble from-user">How does the App Router handle parallel routes?</div>
               <div class="chat-avatar user">A</div>
             </div>
 
-            <!-- Agent response -->
             <div class="chat-msg">
               <div class="chat-avatar agent">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 4.5V11.5L8 15L14 11.5V4.5L8 1Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="8" cy="8" r="1.5" fill="currentColor" opacity="0.6"/></svg>
@@ -612,22 +594,22 @@
                   <div class="code-body"><span class="cm">// Parallel routes use @folder convention</span>
 <span class="kw">export async function</span> <span class="fn">createComponentTree</span>(<span class="prop">props</span><span class="op">:</span> <span class="type">RenderOpts</span>) {
   <span class="kw">const</span> parallelRoutes <span class="op">=</span> layoutSegment
-    .<span class="fn">filter</span>(<span class="prop">s</span> <span class="op">=></span> <span class="prop">s</span>.<span class="fn">startsWith</span>(<span class="str">'@'</span>))
+    .<span class="fn">filter</span>(<span class="prop">s</span> <span class="op">=&gt;</span> <span class="prop">s</span>.<span class="fn">startsWith</span>(<span class="str">'@'</span>))
   <span class="kw">return</span> parallelRoutes.<span class="fn">map</span>(<span class="fn">renderSlot</span>)
 }</div>
                 </div>
 
                 <div class="agent-text">
-                  Parallel routes use the <code>@folder</code> naming convention. The renderer discovers them in <code>createComponentTree</code> and renders each slot independently, enabling simultaneous loading<span class="cursor-blink"></span>
+                  Parallel routes use the <code>@folder</code> naming convention. The renderer discovers them in
+                  <code>createComponentTree</code> and renders each slot independently<span class="cursor-blink"></span>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Input bar -->
           <div class="input-bar">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-            <span class="placeholder">Ask about this repo...</span>
+            <span class="input-placeholder">Ask about this repo...</span>
             <div class="send-btn">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0c0c10" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </div>
@@ -637,8 +619,7 @@
     </div>
   </div>
 
-  <!-- Bottom fade -->
-  <div class="mockup-bottom-fade"></div>
+  <div class="bottom-fade"></div>
 </div>
 
 </body>

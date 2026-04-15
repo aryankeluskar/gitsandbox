@@ -9,20 +9,27 @@ import type {
 import {
   buildAgent,
   COPILOT_MODEL_PRIORITY,
+  CODEX_MODEL_PRIORITY,
   DEFAULT_MODEL,
   SUPPORTED_MODELS,
   type SupportedModel,
 } from "../lib/agent";
 import { createRepoRuntime, type RepoRuntime } from "../lib/repoRuntime";
 import { getCredential, setCredential } from "../db/credentials";
+import { createSession, touchSession } from "../db/sessions";
 import {
   ensureFreshCopilot,
   getCopilotBaseUrl,
   listCopilotModels,
   type CopilotCredentials,
 } from "../lib/copilotOAuth";
+import {
+  ensureFreshCodex,
+  type CodexCredentials,
+} from "../lib/codexOAuth";
 
 const COPILOT_CRED_KEY = "COPILOT_OAUTH";
+const CODEX_CRED_KEY = "CODEX_OAUTH";
 
 async function getCopilotCreds(): Promise<CopilotCredentials | null> {
   const raw = await getCredential(COPILOT_CRED_KEY);
@@ -36,6 +43,20 @@ async function getCopilotCreds(): Promise<CopilotCredentials | null> {
 
 async function saveCopilotCreds(creds: CopilotCredentials): Promise<void> {
   await setCredential(COPILOT_CRED_KEY, JSON.stringify(creds));
+}
+
+async function getCodexCreds(): Promise<CodexCredentials | null> {
+  const raw = await getCredential(CODEX_CRED_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as CodexCredentials;
+  } catch {
+    return null;
+  }
+}
+
+async function saveCodexCreds(creds: CodexCredentials): Promise<void> {
+  await setCredential(CODEX_CRED_KEY, JSON.stringify(creds));
 }
 
 export type ChatStatus =
@@ -83,6 +104,7 @@ export interface UseAgentReturn {
   abort: () => void;
   refreshProviders: () => Promise<void>;
   ready: boolean;
+  sessionId: number | undefined;
 }
 
 const PROVIDER_CRED_KEY: Record<string, string> = {
@@ -102,6 +124,8 @@ async function checkConnectedProviders(): Promise<string[]> {
   const list = entries.filter((v): v is string => v !== null);
   const copilot = await getCopilotCreds();
   if (copilot) list.push("github-copilot");
+  const codex = await getCodexCreds();
+  if (codex) list.push("openai-codex");
   return list;
 }
 
@@ -111,6 +135,13 @@ async function resolveApiKey(provider: string): Promise<string | undefined> {
     if (!creds) return undefined;
     const fresh = await ensureFreshCopilot(creds);
     if (fresh.access !== creds.access) await saveCopilotCreds(fresh);
+    return fresh.access;
+  }
+  if (provider === "openai-codex") {
+    const creds = await getCodexCreds();
+    if (!creds) return undefined;
+    const fresh = await ensureFreshCodex(creds);
+    if (fresh.access !== creds.access) await saveCodexCreds(fresh);
     return fresh.access;
   }
   const key = PROVIDER_CRED_KEY[provider];
@@ -202,10 +233,11 @@ interface RepoIdent {
 
 const PROVIDER_PRIORITY: Record<string, number> = {
   "github-copilot": 0,
-  openrouter: 1,
-  google: 2,
+  "openai-codex": 1,
+  anthropic: 2,
   openai: 3,
-  anthropic: 4,
+  google: 4,
+  openrouter: 5,
 };
 
 function bestProvider(providers: string[]): string | undefined {
@@ -256,6 +288,14 @@ async function pickModelForProviders(
     const picked = await pickCopilotModel();
     if (picked) return picked;
   }
+  if (preferred === "openai-codex") {
+    for (const id of CODEX_MODEL_PRIORITY) {
+      const match = SUPPORTED_MODELS.find(
+        (m) => m.provider === "openai-codex" && m.modelId === id
+      );
+      if (match) return match;
+    }
+  }
   if (
     providers.includes(currentModel.provider) &&
     currentModel.provider === preferred
@@ -284,12 +324,14 @@ export function useAgent(repo: RepoIdent | null): UseAgentReturn {
   const [messages, setMessages] = useState<OcMessage[]>([]);
   const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
+  const [sessionId, setSessionId] = useState<number | undefined>();
 
   const agentRef = useRef<Agent | null>(null);
   const runtimeRef = useRef<RepoRuntime | null>(null);
   const modelRef = useRef<SupportedModel>(DEFAULT_MODEL);
   const providersRef = useRef<string[]>([]);
   const subscribedRef = useRef<Agent | null>(null);
+  const sessionIdRef = useRef<number | undefined>();
 
   const syncProviders = useCallback(async (): Promise<string[]> => {
     const list = await checkConnectedProviders();
@@ -382,6 +424,15 @@ export function useAgent(repo: RepoIdent | null): UseAgentReturn {
         runtimeRef.current = runtime;
         setBootStage("ready");
 
+        const session = await createSession({
+          repoUrl: `https://github.com/${repo!.owner}/${repo!.repo}`,
+          agent: "gitsandbox",
+          sandboxId: `${repo!.owner}/${repo!.repo}`,
+        });
+        if (cancelled) return;
+        sessionIdRef.current = session.id;
+        setSessionId(session.id);
+
         await rebuildAgent();
         if (cancelled) return;
 
@@ -430,6 +481,10 @@ export function useAgent(repo: RepoIdent | null): UseAgentReturn {
         return;
       }
 
+      if (sessionIdRef.current) {
+        touchSession(sessionIdRef.current).catch(() => {});
+      }
+
       setError(null);
       setStatus("streaming");
       try {
@@ -458,6 +513,7 @@ export function useAgent(repo: RepoIdent | null): UseAgentReturn {
       abort,
       refreshProviders,
       ready,
+      sessionId,
     }),
     [
       messages,
@@ -469,6 +525,7 @@ export function useAgent(repo: RepoIdent | null): UseAgentReturn {
       abort,
       refreshProviders,
       ready,
+      sessionId,
     ]
   );
 }

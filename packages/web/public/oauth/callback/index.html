@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head><title>Connecting...</title></head>
+<body>
+<script>
+(function () {
+  try {
+    if (window.opener) {
+      window.opener.postMessage(
+        { type: "oauth-callback", url: window.location.href },
+        window.location.origin
+      );
+    }
+  } catch (e) {
+    if (window.opener) {
+      window.opener.postMessage(
+        { type: "oauth-callback", error: e.message || "OAuth callback failed" },
+        window.location.origin
+      );
+    }
+  }
+  window.close();
+})();
+</script>
+<p style="font-family:system-ui;color:#999;text-align:center;margin-top:40vh">
+  Redirecting back to GitSandbox&hellip;
+</p>
+</body>
+</html>
