@@ -6,6 +6,8 @@ export interface Session {
   agent: string;
   /** LLM provider (e.g. anthropic, openai, github-copilot). */
   provider?: string;
+  /** Human-readable title derived from the first user message. */
+  title?: string;
   sandboxId: string;
   createdAt: Date;
   lastActiveAt: Date;
@@ -57,6 +59,14 @@ db.version(1).stores({
 
 db.version(2).stores({
   sessions: "++id, repoUrl, agent, provider, createdAt, lastActiveAt",
+  messages: "++id, sessionId, role, timestamp",
+  settings: "key",
+  credentials: "key",
+  usage: "++id, sessionId, provider, model, timestamp",
+});
+
+db.version(3).stores({
+  sessions: "++id, repoUrl, agent, provider, title, createdAt, lastActiveAt",
   messages: "++id, sessionId, role, timestamp",
   settings: "key",
   credentials: "key",

@@ -21,7 +21,12 @@ import {
 } from "../lib/repoRuntime";
 import { deleteCredential, getCredential, setCredential } from "../db/credentials";
 import { db } from "../db";
-import { createSession, touchSession } from "../db/sessions";
+import {
+  createSession,
+  deriveSessionTitle,
+  setSessionTitle,
+  touchSession,
+} from "../db/sessions";
 import {
   ensureFreshCopilot,
   getCopilotBaseUrl,
@@ -602,6 +607,15 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
 
       if (sessionIdRef.current) {
         touchSession(sessionIdRef.current).catch(() => {});
+        const title = deriveSessionTitle(text);
+        if (title) {
+          const sid = sessionIdRef.current;
+          db.sessions.get(sid).then((existing) => {
+            if (existing && !existing.title) {
+              setSessionTitle(sid, title).catch(() => {});
+            }
+          }).catch(() => {});
+        }
       }
 
       setError(null);
