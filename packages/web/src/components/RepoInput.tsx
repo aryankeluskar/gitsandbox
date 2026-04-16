@@ -54,14 +54,6 @@ export function RepoInput({ onSubmit, disabled, initialValue }: RepoInputProps) 
           : "border-zinc-800 hover:border-zinc-700"
           }`}
       >
-        {/* Terminal prompt */}
-        <span
-          className={`pointer-events-none select-none pl-3 pr-0 font-display text-[14.5px] font-bold tabular-nums transition-colors ${focused ? "text-emerald-400" : "text-zinc-600 group-hover:text-zinc-500"
-            }`}
-          aria-hidden
-        >
-          
-        </span>
 
         <input
           type="text"
@@ -75,7 +67,7 @@ export function RepoInput({ onSubmit, disabled, initialValue }: RepoInputProps) 
           autoComplete="off"
           autoCapitalize="off"
           autoCorrect="off"
-          className="min-w-0 flex-1 bg-transparent px-1 py-2.5 font-display text-[14px] text-zinc-100 placeholder:font-sans placeholder:text-[13.5px] placeholder:text-zinc-600 outline-none disabled:opacity-50"
+          className="min-w-0 ml-3 flex-1 bg-transparent px-1 py-2.5 font-display text-[14px] text-zinc-100 placeholder:font-sans placeholder:text-[13.5px] placeholder:text-zinc-600 outline-none disabled:opacity-50"
         />
 
         <button

@@ -224,11 +224,6 @@ export function SessionSidebar({
 function EmptyState() {
   return (
     <div className="mt-6 flex flex-col items-center justify-center gap-2 px-4 text-center">
-      <div className="grid h-10 w-10 place-items-center rounded-xl border border-zinc-800 bg-zinc-900/50 text-zinc-600">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-          <path d="M3 4h10M3 8h10M3 12h6" />
-        </svg>
-      </div>
       <p className="font-display text-[12.5px] font-semibold text-zinc-400">
         No sessions yet
       </p>
