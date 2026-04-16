@@ -36,6 +36,15 @@ export function ChatView({ agent, repoLabel }: ChatViewProps) {
   const isEmpty =
     messages.length === 0 && (status === "idle" || status === "needs_auth");
   const showLoadingRepo = !ready && status === "loading";
+  const isAccount = repoLabel.length > 0 && !repoLabel.includes("/");
+  const loadingMessage = isAccount
+    ? "Indexing account repositories..."
+    : "Indexing repository...";
+  const emptyDescription = isAccount
+    ? "Ask anything about this account's repositories. The agent sees a manifest of all repos with metadata. To dive into a specific repo's source, open github.soy.run/" +
+      repoLabel +
+      "/<repo-name>."
+    : "Ask anything about this codebase. The agent uses a custom VFS built on top of GitHub API to read files and answer questions.";
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden bg-zinc-950">
@@ -62,7 +71,7 @@ export function ChatView({ agent, repoLabel }: ChatViewProps) {
                 {repoLabel}
               </h3>
               <p className="max-w-md text-[13.5px] leading-relaxed text-zinc-500">
-                Ask anything about this codebase. The agent uses a custom VFS built on top of GitHub API to read files and answer questions.
+                {emptyDescription}
               </p>
             </div>
           )}
@@ -75,7 +84,7 @@ export function ChatView({ agent, repoLabel }: ChatViewProps) {
 
           {showLoadingRepo && (
             <div className="mt-4 animate-fade-in-up">
-              <StatusShimmer>Indexing repository...</StatusShimmer>
+              <StatusShimmer>{loadingMessage}</StatusShimmer>
             </div>
           )}
 
