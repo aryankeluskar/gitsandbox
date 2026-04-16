@@ -309,7 +309,7 @@ function SessionRow({
 
       <button
         onClick={handleDelete}
-        className="press focus-ring absolute right-1.5 top-1.5 hidden h-6 w-6 items-center justify-center rounded-md text-zinc-500 opacity-0 transition-[opacity,color,background-color] hover:bg-zinc-700/80 hover:text-red-300 group-hover:flex group-hover:opacity-100"
+        className="press focus-ring absolute right-1.5 top-1.5 hidden h-6 w-6 items-center justify-center rounded-md text-zinc-500 opacity-0 transition-[opacity,color,background-color] hover:text-red-300 group-hover:flex group-hover:opacity-100"
         aria-label="Delete session"
         title="Delete session"
       >
