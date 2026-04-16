@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { parseRepoUrl, InvalidRepoUrlError } from "../lib/parseRepoUrl";
 
 interface RepoInputProps {
-  onSubmit: (repoUrl: string, branch: string) => void;
+  onSubmit: (target: { path: string; label: string }) => void;
   disabled?: boolean;
   initialValue?: string;
 }
@@ -17,7 +17,18 @@ export function RepoInput({ onSubmit, disabled, initialValue }: RepoInputProps) 
 
     try {
       const parsed = parseRepoUrl(url);
-      onSubmit(`https://github.com/${parsed.owner}/${parsed.repo}`, parsed.branch);
+      if (parsed.kind === "account") {
+        onSubmit({ path: `/${parsed.owner}`, label: parsed.owner });
+      } else {
+        const branchSuffix =
+          parsed.branch && parsed.branch !== "main"
+            ? `/tree/${parsed.branch}`
+            : "";
+        onSubmit({
+          path: `/${parsed.owner}/${parsed.repo}${branchSuffix}`,
+          label: `${parsed.owner}/${parsed.repo}`,
+        });
+      }
     } catch (err) {
       if (err instanceof InvalidRepoUrlError) {
         setError(err.message);
@@ -40,7 +51,7 @@ export function RepoInput({ onSubmit, disabled, initialValue }: RepoInputProps) 
             type="text"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="owner/repo or paste a GitHub URL"
+            placeholder="owner/repo or organization or paste a GitHub URL"
             disabled={disabled}
             className="flex-1 bg-transparent px-3 py-3.5 text-[14px] text-zinc-100 placeholder-zinc-600 outline-none disabled:opacity-50"
           />

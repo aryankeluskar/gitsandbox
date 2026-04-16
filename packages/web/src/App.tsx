@@ -251,28 +251,15 @@ function HomePage() {
         </div>
 
         <RepoInput
-          onSubmit={(repoUrl) => {
-            try {
-              const url = new URL(repoUrl);
-              const parts = url.pathname.split("/").filter(Boolean);
-              if (parts.length >= 2) {
-                window.location.href = `/${parts[0]}/${parts[1]}`;
-                return;
-              }
-            } catch {
-              /* try as owner/repo */
-            }
-            const segments = repoUrl.split("/").filter(Boolean);
-            if (segments.length >= 2) {
-              window.location.href = `/${segments[0]}/${segments[1]}`;
-            }
+          onSubmit={({ path }) => {
+            window.location.href = path;
           }}
           disabled={false}
         />
 
         <div className="mt-10">
           <p className="mb-3 text-center text-[11px] font-medium uppercase tracking-widest text-zinc-600">
-            Try a repo or account
+            Try a repo, account or organization
           </p>
           <div className="stagger flex flex-wrap justify-center gap-2">
             {SUGGESTED_REPOS.map((r) => (
