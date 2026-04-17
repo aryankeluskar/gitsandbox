@@ -446,7 +446,7 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
         await replaceSessionMessages(sid, snapshot);
       } while (pendingPersistRef.current);
     } catch (err) {
-      console.error("[gitsandbox] persist_messages_failed", err);
+      console.error("[gitfs] persist_messages_failed", err);
     } finally {
       persistingRef.current = false;
     }
@@ -509,7 +509,7 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
       const existingMessages =
         opts?.seedMessages ?? agentRef.current?.state?.messages ?? [];
 
-      console.log("[gitsandbox] rebuildAgent", {
+      console.log("[gitfs] rebuildAgent", {
         providers,
         picked: modelRef.current,
         baseUrl: modelOverrides?.baseUrl,
@@ -549,7 +549,7 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
 
       const existingMessages = agentRef.current?.state?.messages ?? [];
 
-      console.log("[gitsandbox] selectModel", {
+      console.log("[gitfs] selectModel", {
         picked: model,
         baseUrl: modelOverrides?.baseUrl,
         carriedMessages: existingMessages.length,
@@ -652,7 +652,7 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
             try {
               seededMessages = await getSessionMessages(existing!.id!);
             } catch (err) {
-              console.error("[gitsandbox] load_messages_failed", err);
+              console.error("[gitfs] load_messages_failed", err);
               seededMessages = [];
             }
             if (cancelled) return;
@@ -711,7 +711,7 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
 
     const session = await createSession({
       repoUrl,
-      agent: "gitsandbox",
+      agent: "gitfs",
       provider: modelRef.current.provider,
       sandboxId,
       branch,

@@ -2,13 +2,13 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "gitsandbox",
+      "name": "gitfs",
       "devDependencies": {
         "wrangler": "^4.82.2",
       },
     },
     "packages/web": {
-      "name": "@gitsandbox/web",
+      "name": "@gitfs/web",
       "version": "0.1.0",
       "dependencies": {
         "@mariozechner/pi-agent-core": "^0.67.2",
@@ -39,7 +39,7 @@
       },
     },
     "packages/worker": {
-      "name": "@gitsandbox/worker",
+      "name": "@gitfs/worker",
       "version": "0.1.0",
       "dependencies": {
         "@cloudflare/sandbox": "^0.7.0",
@@ -255,9 +255,9 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.27.3", "", { "os": "win32", "cpu": "x64" }, "sha512-4uJGhsxuptu3OcpVAzli+/gWusVGwZZHTlS63hh++ehExkVT8SgiEf7/uC/PclrPPkLhZqGgCTjd0VWLo6xMqA=="],
 
-    "@gitsandbox/web": ["@gitsandbox/web@workspace:packages/web"],
+    "@gitfs/web": ["@gitfs/web@workspace:packages/web"],
 
-    "@gitsandbox/worker": ["@gitsandbox/worker@workspace:packages/worker"],
+    "@gitfs/worker": ["@gitfs/worker@workspace:packages/worker"],
 
     "@google/genai": ["@google/genai@1.50.1", "", { "dependencies": { "google-auth-library": "^10.3.0", "p-retry": "^4.6.2", "protobufjs": "^7.5.4", "ws": "^8.18.0" }, "peerDependencies": { "@modelcontextprotocol/sdk": "^1.25.2" }, "optionalPeers": ["@modelcontextprotocol/sdk"] }, "sha512-YbkX7H9+1Pt8wOt7DDREy8XSoiL6fRDzZQRyaVBarFf8MR3zHGqVdvM4cLbDXqPhxqvegZShgfxb8kw9C7YhAQ=="],
 

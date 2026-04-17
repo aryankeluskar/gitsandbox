@@ -135,7 +135,7 @@ export default function App() {
             className="group flex items-center gap-2 font-display text-[15px] font-bold tracking-tight text-zinc-100 focus-ring rounded-sm"
           >
             <span className="text-emerald-400">git</span>
-            <span>sandbox</span>
+            <span>fs</span>
           </a>
           <button
             onClick={() => setMobileSidebarOpen(false)}
@@ -232,7 +232,7 @@ function AppHeader({ urlTarget, onOpenMobileSidebar, onOpenSettings }: AppHeader
       <div className="flex shrink-0 items-center gap-0.5">
         <HeaderDivider />
         <HeaderIconLink
-          href="https://github.com/aryankeluskar/gitsandbox"
+          href="https://github.com/aryankeluskar/git-fs"
           label="Star on GitHub"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -409,7 +409,7 @@ function HomePage() {
           <div className="mb-10 text-center">
             <h1 className="font-display text-5xl font-bold tracking-tight text-zinc-100 leading-none sm:text-6xl md:text-7xl">
               <span className="text-emerald-400 mr-2">git</span>
-              <span>sandbox</span>
+              <span>fs</span>
               {/* <span className="cursor-blink ml-1 -mb-1 bg-emerald-400 align-baseline" aria-hidden /> */}
             </h1>
             <p className="mx-auto mt-10 max-w-lg text-[14px] leading-relaxed text-zinc-400">

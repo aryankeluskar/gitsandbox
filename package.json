@@ -1,15 +1,15 @@
 {
-  "name": "gitsandbox",
+  "name": "gitfs",
   "private": true,
   "workspaces": ["packages/*"],
   "scripts": {
-    "dev:worker": "bun run --filter=@gitsandbox/worker dev",
-    "dev:web": "bun run --filter=@gitsandbox/web dev",
+    "dev:worker": "bun run --filter=@gitfs/worker dev",
+    "dev:web": "bun run --filter=@gitfs/web dev",
     "build": "bun run --filter=* build",
     "test": "bun run --filter=* test",
-    "deploy:worker": "bun run --filter=@gitsandbox/worker deploy",
-    "deploy:web": "bun run --filter=@gitsandbox/web deploy",
-    "types": "bun run --filter=@gitsandbox/worker types"
+    "deploy:worker": "bun run --filter=@gitfs/worker deploy",
+    "deploy:web": "bun run --filter=@gitfs/web deploy",
+    "types": "bun run --filter=@gitfs/worker types"
   },
   "devDependencies": {
     "wrangler": "^4.82.2"

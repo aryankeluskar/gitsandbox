@@ -1,8 +1,8 @@
-# GitSandbox
+# GitFS
 
-Ask any GitHub repo from your browser. Enter a repository URL, and GitSandbox spins up a Cloudflare Sandbox with an AI coding agent (OpenCode or Pi) through an xterm.js terminal in your browser.
+Ask any GitHub repo from your browser. Enter a repository URL, and GitFS spins up a Cloudflare Sandbox with an AI coding agent (OpenCode or Pi) through an xterm.js terminal in your browser.
 
-<img alt="image" src="https://github.com/aryankeluskar/gitsandbox/blob/master/public/banner.png?raw=true" />
+<img alt="image" src="https://github.com/aryankeluskar/git-fs/blob/master/public/banner.png?raw=true" />
 
 ## Architecture
 
@@ -40,7 +40,7 @@ Open [http://localhost:3000](http://localhost:3000) and enter a GitHub repo URL 
 ## Project Structure
 
 ```
-gitsandbox/
+gitfs/
   packages/
     worker/          # Cloudflare Worker (Hono + Sandbox SDK)
       src/
@@ -77,7 +77,7 @@ gitsandbox/
 bun run deploy:worker
 
 # Build and deploy the frontend
-bun run --filter=@gitsandbox/web build
+bun run --filter=@gitfs/web build
 bun run deploy:web
 ```
 

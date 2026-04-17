@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>GitSandbox — Hype Reel</title>
+  <title>GitFS — Hype Reel</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -21,7 +21,7 @@
       font-family: 'Fraunces', serif;
     }
 
-    [data-composition-id="gitsandbox-hype"] {
+    [data-composition-id="gitfs-hype"] {
       position: relative;
       width: 1920px;
       height: 1080px;
@@ -33,7 +33,7 @@
 
     /* Preview-only scale: fit to window without affecting HF render */
     @media (max-width: 1940px), (max-height: 1100px) {
-      [data-composition-id="gitsandbox-hype"] {
+      [data-composition-id="gitfs-hype"] {
         transform: scale(min(calc(100vw / 1920), calc(100vh / 1080)));
         transform-origin: center center;
       }
@@ -750,7 +750,7 @@
 </head>
 <body>
 
-<div data-composition-id="gitsandbox-hype"
+<div data-composition-id="gitfs-hype"
      data-width="1920"
      data-height="1080"
      data-duration="52"
@@ -765,7 +765,7 @@
   <!-- ───── Persistent corner marks (editorial chrome) ───── -->
   <div class="corner-rule rule-top"></div>
   <div class="corner-rule rule-bottom"></div>
-  <div class="corner-mark corner-tl">gitsandbox · 2026</div>
+  <div class="corner-mark corner-tl">gitfs · 2026</div>
   <div class="corner-mark corner-tr">reel no. 01</div>
   <div class="corner-mark corner-bl">riso / ink / browser</div>
   <div class="corner-mark corner-br">made w/ 💚</div>
@@ -1124,7 +1124,7 @@
 
   // Hold ~2.4s on the wordmark — total ends at 52.0
 
-  window.__timelines["gitsandbox-hype"] = tl;
+  window.__timelines["gitfs-hype"] = tl;
 
   // Standalone preview — auto-play and loop when not running inside hyperframes.
   // ?seek=<seconds> pauses at that timestamp for screenshotting.

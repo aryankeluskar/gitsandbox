@@ -3,7 +3,7 @@ import { getApiBase } from "./config";
 /**
  * Claude Pro/Max (Anthropic subscription) OAuth credential handling.
  *
- * Refresh goes through the gitsandbox worker since
+ * Refresh goes through the gitfs worker since
  * platform.claude.com doesn't set CORS for arbitrary origins.
  */
 

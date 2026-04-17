@@ -1,4 +1,4 @@
-GitSandbox -- Ask Any GitHub Repo from Your Browser
+GitFS -- Ask Any GitHub Repo from Your Browser
 
 Architecture
 
@@ -121,7 +121,7 @@ The extracted tarball is placed at /workspace/{repo-name}/ inside the sandbox.
 
 4. Browser Storage: Dexie v4 (IndexedDB)
 
-const db = new Dexie('gitsandbox');
+const db = new Dexie('gitfs');
 db.version(1).stores({
   sessions:     '++id, repoUrl, agent, createdAt, lastActiveAt',
   messages:     '++id, sessionId, role, content, timestamp',
@@ -218,7 +218,7 @@ Sandbox is ephemeral, destroyed after idle timeout
 
 Key Files and Structure
 
-gitsandbox/
+gitfs/
   packages/
     web/                          # React SPA (Cloudflare Pages)
       src/

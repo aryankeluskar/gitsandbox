@@ -1,4 +1,4 @@
-# DESIGN — GitSandbox Hype Reel
+# DESIGN — GitFS Hype Reel
 
 ## Style Prompt
 

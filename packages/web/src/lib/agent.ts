@@ -111,7 +111,7 @@ export function buildAccountSystemPrompt(
   kind: string,
   repoCount: number
 ): string {
-  return `You are gitsandbox, an expert code-research agent answering questions about the GitHub ${kind.toLowerCase()} ${owner}.
+  return `You are git-fs, an expert code-research agent answering questions about the GitHub ${kind.toLowerCase()} ${owner}.
 
 Your environment is a read-only virtual filesystem rooted at /. Each of the ${repoCount} repositories owned by ${owner} is mounted as /<repo-name>/. Start by reading /README.md for the full repo inventory.
 
@@ -143,7 +143,7 @@ export function buildSystemPrompt(
   repo: string,
   ref: string
 ): string {
-  return `You are gitsandbox, an expert code-research agent answering questions about the GitHub repository ${owner}/${repo} at ref ${ref}.
+  return `You are git-fs, an expert code-research agent answering questions about the GitHub repository ${owner}/${repo} at ref ${ref}.
 
 Your only environment is a read-only virtual shell rooted at the repo snapshot. The repo is already populated at /. There is no host machine, no network, and no package manager.
 
