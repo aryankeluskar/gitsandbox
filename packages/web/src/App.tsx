@@ -199,7 +199,7 @@ interface AppHeaderProps {
 
 function AppHeader({ urlTarget, onOpenMobileSidebar, onOpenSettings }: AppHeaderProps) {
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-zinc-800/60 bg-zinc-950/80 px-3 backdrop-blur-md">
+    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-zinc-800/60 bg-zinc-950/80 px-4 backdrop-blur-md">
       <div className="flex min-w-0 flex-1 items-center gap-2.5">
         <button
           onClick={onOpenMobileSidebar}

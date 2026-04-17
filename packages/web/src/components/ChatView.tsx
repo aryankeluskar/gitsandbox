@@ -55,11 +55,11 @@ export function ChatView({ agent, repoLabel }: ChatViewProps) {
         <div className="mx-auto w-full max-w-3xl px-6 py-6">
           {isEmpty && (
             <div className="flex min-h-[35vh] flex-col items-center justify-center text-center animate-fade-in">
-              <div className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+              <div className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-3">
                   <img
                     src={`https://github.com/${repoLabel.split("/")[0]}.png?size=72`}
                     alt={repoLabel.split("/")[0]}
-                    className="h-9 w-9 rounded-lg"
+                    className="h-12 w-12 rounded-lg"
                   />
               </div>
               <h3 className="mb-2 text-xl font-semibold tracking-tight text-zinc-100">
