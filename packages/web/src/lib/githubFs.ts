@@ -1,7 +1,6 @@
 import { InMemoryFs } from "just-bash/browser";
 
 const GH_API = "https://api.github.com";
-const GH_RAW = "https://raw.githubusercontent.com";
 
 export interface GitHubFsOptions {
   owner: string;
@@ -140,20 +139,30 @@ export async function fetchTree(
   return (await r.json()) as GitTreeResponse;
 }
 
+/**
+ * Fetch a blob via the GitHub contents API using the commit SHA as the `ref`
+ * query param. We deliberately avoid raw.githubusercontent.com here: its CORS
+ * preflight rejects requests that carry an `Authorization` header, which means
+ * any signed-in user would hit `TypeError: Failed to fetch` on every file
+ * read. api.github.com, in contrast, advertises Authorization in its CORS
+ * allowlist and supports `Accept: application/vnd.github.raw` to stream the
+ * file bytes directly.
+ */
 async function fetchBlob(
   owner: string,
   repo: string,
-  ref: string,
+  sha: string,
   path: string,
   token: string | undefined
 ): Promise<string> {
-  const rawUrl = `${GH_RAW}/${owner}/${repo}/${encodeURIComponent(ref)}/${path
-    .split("/")
-    .map(encodeURIComponent)
-    .join("/")}`;
-  const headers: Record<string, string> = {};
+  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+  const url = `${GH_API}/repos/${owner}/${repo}/contents/${encodedPath}?ref=${encodeURIComponent(sha)}`;
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github.raw",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
   if (token) headers.Authorization = `Bearer ${token}`;
-  const r = await fetch(rawUrl, { headers });
+  const r = await fetch(url, { headers });
   if (!r.ok) {
     throw new Error(`Failed to fetch ${path}: ${r.status} ${r.statusText}`);
   }
@@ -197,7 +206,7 @@ export async function hydrateRepoFs(
       return await fetchBlob(
         opts.owner,
         opts.repo,
-        resolved.ref,
+        resolved.sha,
         entry.path,
         latestToken
       );
