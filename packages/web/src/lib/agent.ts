@@ -38,8 +38,6 @@ export const SUPPORTED_MODELS: SupportedModel[] = [
   // GitHub Copilot (subscription)
   { provider: "github-copilot", modelId: "claude-haiku-4.5", label: "Copilot · Claude Haiku 4.5" },
   { provider: "github-copilot", modelId: "gpt-5.4", label: "Copilot · GPT-5.4" },
-  { provider: "github-copilot", modelId: "gpt-5-mini", label: "Copilot · GPT-5 Mini" },
-  { provider: "github-copilot", modelId: "gpt-4.1", label: "Copilot · GPT-4.1" },
   { provider: "github-copilot", modelId: "gpt-4o", label: "Copilot · GPT-4o" },
 
   // OpenAI Codex (ChatGPT Plus/Pro subscription)
@@ -55,7 +53,6 @@ export const SUPPORTED_MODELS: SupportedModel[] = [
   // OpenAI (API key)
   { provider: "openai", modelId: "gpt-5.4", label: "GPT-5.4" },
   { provider: "openai", modelId: "gpt-5.4-mini", label: "GPT-5.4 Mini" },
-  { provider: "openai", modelId: "gpt-5-mini", label: "GPT-5 Mini" },
 
   // Google (API key)
   { provider: "google", modelId: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
@@ -71,7 +68,6 @@ export const COPILOT_MODEL_PRIORITY: string[] = [
   "claude-sonnet-4.5",
   "claude-haiku-4.5",
   "gpt-5.4",
-  "gpt-5-mini",
   "gpt-4.1",
   "gpt-4o",
 ];

@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GitSandbox — Hype Reel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #0e0d0a;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      font-family: 'Fraunces', serif;
+    }
+
+    [data-composition-id="gitsandbox-hype"] {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: #EFE3CF;
+      color: #1A1814;
+      isolation: isolate;
+    }
+
+    /* Preview-only scale: fit to window without affecting HF render */
+    @media (max-width: 1940px), (max-height: 1100px) {
+      [data-composition-id="gitsandbox-hype"] {
+        transform: scale(min(calc(100vw / 1920), calc(100vh / 1080)));
+        transform-origin: center center;
+      }
+    }
+
+    /* ────────────────── Background layers ────────────────── */
+
+    .paper-base {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 70% at 50% 40%, rgba(255, 245, 220, 0.4), transparent 70%),
+        radial-gradient(ellipse 60% 50% at 20% 80%, rgba(210, 75, 44, 0.05), transparent 60%),
+        radial-gradient(ellipse 50% 50% at 85% 20%, rgba(14, 122, 84, 0.04), transparent 60%),
+        #EFE3CF;
+      z-index: 0;
+    }
+
+    .grain {
+      position: absolute;
+      inset: -20px;
+      background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.06 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 400px 400px;
+      mix-blend-mode: multiply;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .halftone {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(26, 24, 20, 0.08) 1px, transparent 1.2px);
+      background-size: 16px 16px;
+      mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, transparent 50%, black 90%);
+      -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, transparent 50%, black 90%);
+      opacity: 0.6;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 90% 80% at 50% 50%, transparent 55%, rgba(26, 24, 20, 0.35) 100%);
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    .ghost-word {
+      position: absolute;
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-variation-settings: 'opsz' 144;
+      color: #1A1814;
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 2;
+      letter-spacing: -0.05em;
+      white-space: nowrap;
+    }
+
+    .ghost-1 { top: 4%; left: -2%; font-size: 220px; }
+    .ghost-2 { bottom: 3%; right: -3%; font-size: 180px; font-style: italic; }
+
+    .corner-mark {
+      position: absolute;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #7A6E5A;
+      z-index: 7;
+    }
+
+    .corner-tl { top: 36px; left: 48px; }
+    .corner-tr { top: 36px; right: 48px; }
+    .corner-bl { bottom: 36px; left: 48px; }
+    .corner-br { bottom: 36px; right: 48px; }
+
+    .corner-rule {
+      position: absolute;
+      background: #1A1814;
+      z-index: 7;
+    }
+    .rule-top { top: 72px; left: 48px; right: 48px; height: 1.5px; }
+    .rule-bottom { bottom: 72px; left: 48px; right: 48px; height: 1.5px; }
+
+    /* ────────────────── Scenes ────────────────── */
+
+    .scene {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+    }
+
+    .scene-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 120px 140px;
+      box-sizing: border-box;
+    }
+
+    /* Scenes hidden at page load (tl.set flips them visible at scene start) */
+    .scene-1, .scene-2, .scene-3, .scene-4, .scene-5 { opacity: 0; }
+    .scene-0 { opacity: 1; }
+
+    /* ────────────────── SCENE 0 — intro hook ────────────────── */
+
+    .s0-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      color: #7A6E5A;
+      font-weight: 500;
+      margin-bottom: 56px;
+    }
+
+    .s0-eyebrow::before { content: '— '; color: #D24B2C; }
+    .s0-eyebrow::after  { content: ' —'; color: #D24B2C; }
+
+    .s0-headline {
+      font-family: 'Fraunces', serif;
+      font-weight: 300;
+      font-variation-settings: 'opsz' 144;
+      font-size: 128px;
+      letter-spacing: -0.04em;
+      line-height: 1.0;
+      text-align: center;
+      color: #1A1814;
+      max-width: 1500px;
+    }
+    .s0-headline em {
+      font-style: italic;
+      font-weight: 900;
+      color: #1A1814;
+    }
+    .s0-headline .hl {
+      font-style: italic;
+      font-weight: 900;
+      color: #0E7A54;
+    }
+
+    .s0-sub {
+      margin-top: 56px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      letter-spacing: 0.08em;
+      color: #7A6E5A;
+    }
+    .s0-sub b { color: #1A1814; font-weight: 700; }
+
+    /* ────────────────── SCENE 5 — outro hold ────────────────── */
+
+    .s5-wordmark {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-variation-settings: 'opsz' 144;
+      font-size: 196px;
+      letter-spacing: -0.045em;
+      line-height: 1.0;
+      color: #1A1814;
+      text-align: center;
+    }
+    .s5-wordmark b {
+      color: #0E7A54;
+      font-style: italic;
+      font-weight: 900;
+    }
+    .s5-tag {
+      margin-top: 44px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #7A6E5A;
+    }
+    .s5-tag b { color: #D24B2C; }
+
+    /* ────────────────── Caption (lower-third) ────────────────── */
+
+    .caption {
+      position: absolute;
+      left: 50%;
+      bottom: 120px;
+      transform: translateX(-50%);
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 40px;
+      letter-spacing: -0.01em;
+      color: #1A1814;
+      background: rgba(239, 227, 207, 0.72);
+      border: 1.5px solid #1A1814;
+      padding: 12px 28px;
+      box-shadow: 6px 6px 0 0 #D24B2C;
+      z-index: 40;
+      opacity: 0;
+      white-space: nowrap;
+      backdrop-filter: blur(2px);
+    }
+    .caption.mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-style: normal;
+      font-weight: 500;
+      font-size: 32px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ────────────────── SCENE 1 — the pain ────────────────── */
+
+    .s1-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #D24B2C;
+      margin-bottom: 22px;
+      font-weight: 700;
+    }
+
+    .s1-label::before {
+      content: '// ';
+      color: #7A6E5A;
+    }
+
+    .s1-headline {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-variation-settings: 'opsz' 144;
+      font-size: 96px;
+      letter-spacing: -0.035em;
+      line-height: 0.95;
+      text-align: center;
+      color: #1A1814;
+      margin-bottom: 48px;
+      max-width: 1400px;
+    }
+
+    .s1-headline em {
+      font-style: italic;
+      color: #D24B2C;
+      font-weight: 900;
+    }
+
+    .s1-terminal {
+      width: 1100px;
+      background: #1A1814;
+      color: #EFE3CF;
+      border-radius: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      line-height: 1.7;
+      padding: 28px 34px;
+      box-shadow:
+        0 20px 60px rgba(26, 24, 20, 0.35),
+        0 0 0 2px #1A1814,
+        14px 14px 0 0 #D24B2C;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .s1-terminal-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed rgba(239, 227, 207, 0.15);
+    }
+
+    .s1-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .s1-dot.r { background: #D24B2C; }
+    .s1-dot.y { background: #d4a017; }
+    .s1-dot.g { background: #0E7A54; }
+
+    .s1-term-title {
+      margin-left: auto;
+      font-size: 13px;
+      color: #7A6E5A;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .s1-line { opacity: 0; display: block; }
+    .s1-prompt { color: #0E7A54; }
+    .s1-cmd { color: #EFE3CF; }
+    .s1-muted { color: #7A6E5A; }
+    .s1-err { color: #D24B2C; }
+
+    /* ────────────────── SCENE 2 — THE SWAP ────────────────── */
+
+    .s2-kicker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: #D24B2C;
+      font-weight: 700;
+      margin-bottom: 40px;
+    }
+
+    .s2-url-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-variation-settings: 'opsz' 144;
+      font-size: 128px;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: #1A1814;
+      white-space: nowrap;
+    }
+
+    .s2-url-row.old {
+      margin-bottom: 32px;
+    }
+
+    .s2-url-row .domain-old {
+      color: #1A1814;
+      position: relative;
+    }
+
+    .s2-scratch {
+      position: absolute;
+      top: 50%;
+      left: -6%;
+      width: 112%;
+      height: 14px;
+      background: #D24B2C;
+      transform-origin: left center;
+      transform: rotate(-3deg) scaleX(0);
+      z-index: 2;
+      border-radius: 2px;
+      box-shadow: 0 3px 0 rgba(26, 24, 20, 0.12);
+    }
+
+    .s2-scratch::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      background: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='20'%3E%3Cfilter id='r'%3E%3CfeTurbulence baseFrequency='0.05 0.9' numOctaves='2'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' fill='%23D24B2C' filter='url(%23r)'/%3E%3C/svg%3E");
+      opacity: 0.4;
+    }
+
+    .s2-arrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 40px;
+      color: #7A6E5A;
+      margin: 4px 0 18px;
+      letter-spacing: -0.05em;
+    }
+
+    .s2-url-row.new .domain-new {
+      color: #0E7A54;
+      position: relative;
+      display: inline-block;
+    }
+
+    /* Stamp ring around .soy.run */
+    .s2-stamp-ring {
+      position: absolute;
+      border: 4px solid #0E7A54;
+      border-radius: 14px;
+      padding: 8px 16px;
+      top: -18px;
+      left: -20px;
+      right: -20px;
+      bottom: -10px;
+      transform: rotate(-1.5deg) scale(0.8);
+      opacity: 0;
+      z-index: -1;
+      mix-blend-mode: multiply;
+      filter: url(#rough-edge);
+    }
+
+    .s2-punchline {
+      margin-top: 56px;
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-style: italic;
+      font-variation-settings: 'opsz' 144;
+      font-size: 40px;
+      color: #1A1814;
+      letter-spacing: -0.01em;
+      text-align: center;
+    }
+
+    .s2-punchline b {
+      font-weight: 900;
+      font-style: normal;
+      color: #0E7A54;
+    }
+
+    /* ────────────────── SCENE 3 — product demo ────────────────── */
+
+    .s3-kicker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #D24B2C;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .s3-headline {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-variation-settings: 'opsz' 144;
+      font-size: 72px;
+      letter-spacing: -0.035em;
+      line-height: 1;
+      color: #1A1814;
+      margin-bottom: 36px;
+      text-align: center;
+    }
+
+    .s3-headline em {
+      font-style: italic;
+      color: #0E7A54;
+      font-weight: 900;
+    }
+
+    .s3-app {
+      width: 1200px;
+      background: #FAF3E3;
+      border: 2px solid #1A1814;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow:
+        14px 14px 0 0 #0E7A54,
+        0 24px 60px rgba(26, 24, 20, 0.15);
+      font-family: 'JetBrains Mono', monospace;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .s3-titlebar {
+      background: #1A1814;
+      color: #EFE3CF;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .s3-tb-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .s3-tb-url {
+      margin-left: 20px;
+      font-size: 15px;
+      letter-spacing: -0.01em;
+      color: #7A6E5A;
+    }
+    .s3-tb-url b { color: #0E7A54; font-weight: 700; }
+
+    .s3-body { display: flex; min-height: 440px; }
+
+    .s3-sidebar {
+      width: 230px;
+      background: #F4EBDC;
+      border-right: 2px solid #1A1814;
+      padding: 18px 0;
+      font-size: 14px;
+    }
+
+    .s3-brand {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-variation-settings: 'opsz' 40;
+      font-size: 22px;
+      padding: 0 20px 16px;
+      border-bottom: 1px dashed #7A6E5A;
+      margin-bottom: 14px;
+      letter-spacing: -0.02em;
+    }
+    .s3-brand span { color: #0E7A54; }
+
+    .s3-sidebar-label {
+      padding: 0 20px 6px;
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      color: #7A6E5A;
+      text-transform: uppercase;
+    }
+
+    .s3-sidebar-item {
+      padding: 8px 20px;
+      color: #1A1814;
+    }
+    .s3-sidebar-item.active {
+      background: #1A1814;
+      color: #EFE3CF;
+    }
+
+    .s3-main {
+      flex: 1;
+      padding: 26px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .s3-question {
+      align-self: flex-end;
+      background: #1A1814;
+      color: #EFE3CF;
+      border-radius: 10px 10px 2px 10px;
+      padding: 14px 20px;
+      font-size: 19px;
+      max-width: 72%;
+      line-height: 1.45;
+    }
+
+    .s3-agent-wrap { display: flex; gap: 14px; align-items: flex-start; }
+
+    .s3-agent-avatar {
+      width: 36px;
+      height: 36px;
+      background: #0E7A54;
+      color: #EFE3CF;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .s3-agent-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .s3-thought {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #7A6E5A;
+      background: rgba(14, 122, 84, 0.08);
+      border: 1px dashed #0E7A54;
+      border-radius: 6px;
+      padding: 6px 12px;
+      width: fit-content;
+    }
+
+    .s3-thought::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #0E7A54;
+    }
+
+    .s3-code {
+      background: #1A1814;
+      color: #EFE3CF;
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-size: 16px;
+      line-height: 1.65;
+      white-space: pre;
+      overflow: hidden;
+    }
+
+    .s3-code .kw { color: #D24B2C; }
+    .s3-code .fn { color: #e8b84f; }
+    .s3-code .str { color: #9ac47a; }
+    .s3-code .cm { color: #7A6E5A; font-style: italic; }
+    .s3-code .var { color: #EFE3CF; }
+
+    .s3-answer {
+      font-family: 'Fraunces', serif;
+      font-size: 20px;
+      line-height: 1.45;
+      color: #1A1814;
+      font-weight: 500;
+    }
+    .s3-answer em {
+      font-weight: 900;
+      font-style: italic;
+      color: #0E7A54;
+    }
+
+    .s3-cursor {
+      display: inline-block;
+      width: 10px;
+      height: 20px;
+      background: #0E7A54;
+      vertical-align: text-bottom;
+      margin-left: 3px;
+    }
+
+    /* ────────────────── SCENE 4 — CTA ────────────────── */
+
+    .s4-kicker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: #D24B2C;
+      font-weight: 700;
+      margin-bottom: 30px;
+    }
+
+    .s4-url {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-variation-settings: 'opsz' 144;
+      font-size: 220px;
+      letter-spacing: -0.055em;
+      line-height: 0.9;
+      color: #1A1814;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .s4-url b {
+      color: #0E7A54;
+    }
+
+    .s4-tagline {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 500;
+      font-variation-settings: 'opsz' 144;
+      font-size: 44px;
+      color: #1A1814;
+      letter-spacing: -0.015em;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .s4-features {
+      display: flex;
+      gap: 40px;
+      margin-top: 60px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #1A1814;
+      font-weight: 500;
+    }
+
+    .s4-feature {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      border: 2px solid #1A1814;
+      background: #F4EBDC;
+      box-shadow: 4px 4px 0 #D24B2C;
+    }
+
+    .s4-feature-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #0E7A54;
+    }
+
+    /* ────────────────── Transition panel ────────────────── */
+
+    .transition-panel {
+      position: absolute;
+      top: 0;
+      left: -10%;
+      width: 120%;
+      height: 100%;
+      background: #D24B2C;
+      transform: translateX(-130%) skewX(-6deg);
+      z-index: 50;
+      box-shadow: 0 0 0 8px #1A1814 inset;
+    }
+
+    .transition-panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.06 0 0 0 0.6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.5;
+      mix-blend-mode: multiply;
+    }
+
+    /* ────────────────── Utility ────────────────── */
+
+    .perf-check {
+      text-rendering: geometricPrecision;
+      -webkit-font-smoothing: antialiased;
+      font-variant-ligatures: none;
+    }
+  </style>
+
+  <svg width="0" height="0" style="position:absolute">
+    <filter id="rough-edge">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="3"/>
+      <feDisplacementMap in="SourceGraphic" scale="4"/>
+    </filter>
+  </svg>
+</head>
+<body>
+
+<div data-composition-id="gitsandbox-hype"
+     data-width="1920"
+     data-height="1080"
+     data-duration="52"
+     class="perf-check">
+
+  <!-- ───── Persistent background layers ───── -->
+  <div class="paper-base"></div>
+  <div class="halftone"></div>
+  <div class="ghost-word ghost-1">GITHUB</div>
+  <div class="ghost-word ghost-2">.soy.run</div>
+
+  <!-- ───── Persistent corner marks (editorial chrome) ───── -->
+  <div class="corner-rule rule-top"></div>
+  <div class="corner-rule rule-bottom"></div>
+  <div class="corner-mark corner-tl">gitsandbox · 2026</div>
+  <div class="corner-mark corner-tr">reel no. 01</div>
+  <div class="corner-mark corner-bl">riso / ink / browser</div>
+  <div class="corner-mark corner-br">made w/ 💚</div>
+
+  <!-- ════════════ SCENE 0 — intro hook ════════════ -->
+  <div class="scene scene-0">
+    <div class="scene-content">
+      <div class="s0-eyebrow" id="s0-eye">a quiet idea</div>
+      <h1 class="s0-headline" id="s0-head">
+        what if you could <em>just</em><br/>
+        <span class="hl">ask</span> a repo?
+      </h1>
+      <div class="s0-sub" id="s0-sub"><b>no clone.</b> &nbsp; no install. &nbsp; no setup.</div>
+    </div>
+  </div>
+
+  <!-- ════════════ SCENE 1 — the pain ════════════ -->
+  <div class="scene scene-1">
+    <div class="scene-content">
+      <div class="s1-label" id="s1-label">every dev, every day</div>
+      <h1 class="s1-headline" id="s1-headline">
+        15 minutes of setup<br/>
+        <em>just to read one file.</em>
+      </h1>
+
+      <div class="s1-terminal" id="s1-terminal">
+        <div class="s1-terminal-header">
+          <div class="s1-dot r"></div>
+          <div class="s1-dot y"></div>
+          <div class="s1-dot g"></div>
+          <div class="s1-term-title">~/projects</div>
+        </div>
+        <div>
+          <span class="s1-line" id="s1-l1"><span class="s1-prompt">$</span> <span class="s1-cmd">git clone https://github.com/vercel/next.js.git</span></span>
+          <span class="s1-line" id="s1-l2"><span class="s1-muted">Cloning into 'next.js'... Receiving objects: 34%</span></span>
+          <span class="s1-line" id="s1-l3"><span class="s1-prompt">$</span> <span class="s1-cmd">cd next.js && pnpm install</span></span>
+          <span class="s1-line" id="s1-l4"><span class="s1-muted">Downloading 1,847 packages... this may take a while</span></span>
+          <span class="s1-line" id="s1-l5"><span class="s1-err">✖ ERR_PNPM_PEER_DEP_ISSUES · 3 peer dep warnings</span></span>
+          <span class="s1-line" id="s1-l6"><span class="s1-prompt">$</span> <span class="s1-cmd">code packages/next/src/server/app-render/...</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ SCENE 2 — the swap ════════════ -->
+  <div class="scene scene-2">
+    <div class="scene-content">
+      <div class="s2-kicker" id="s2-kicker">one-character fix ↓</div>
+
+      <div class="s2-url-row old">
+        <span id="s2-old-prefix">github</span><span class="domain-old" id="s2-old-domain">.com</span><span id="s2-old-path" style="color:#7A6E5A">/vercel/next.js</span>
+        <div class="s2-scratch" id="s2-scratch"></div>
+      </div>
+
+      <div class="s2-arrow" id="s2-arrow">↓</div>
+
+      <div class="s2-url-row new">
+        <span id="s2-new-prefix">github</span><span class="domain-new" id="s2-new-domain">.soy.run<span class="s2-stamp-ring" id="s2-stamp"></span></span><span id="s2-new-path" style="color:#7A6E5A">/vercel/next.js</span>
+      </div>
+
+      <p class="s2-punchline" id="s2-punch">
+        add <b>4 letters</b>. chat with the repo.
+      </p>
+    </div>
+  </div>
+
+  <!-- ════════════ SCENE 3 — product demo ════════════ -->
+  <div class="scene scene-3">
+    <div class="scene-content">
+      <div class="s3-kicker" id="s3-kicker">no clone · no install</div>
+      <h2 class="s3-headline" id="s3-headline">
+        your AI sub, <em>their</em> repo.
+      </h2>
+
+      <div class="s3-app" id="s3-app">
+        <div class="s3-titlebar">
+          <div class="s3-tb-dot" style="background:#D24B2C"></div>
+          <div class="s3-tb-dot" style="background:#d4a017"></div>
+          <div class="s3-tb-dot" style="background:#0E7A54"></div>
+          <div class="s3-tb-url"><b>github.soy.run</b>/vercel/next.js</div>
+        </div>
+        <div class="s3-body">
+          <div class="s3-sidebar">
+            <div class="s3-brand"><span>git</span>sandbox</div>
+            <div class="s3-sidebar-label">Sessions</div>
+            <div class="s3-sidebar-item active">▲ vercel/next.js</div>
+            <div class="s3-sidebar-item">D denoland/deno</div>
+            <div class="s3-sidebar-item">E expressjs/express</div>
+          </div>
+          <div class="s3-main">
+            <div class="s3-question" id="s3-q">
+              what does middleware.ts do?
+            </div>
+            <div class="s3-agent-wrap">
+              <div class="s3-agent-avatar" id="s3-avatar">g</div>
+              <div class="s3-agent-body">
+                <div class="s3-thought" id="s3-thought">reading packages/next/src/server</div>
+                <div class="s3-code" id="s3-code"><span class="cm">// middleware runs before every request</span>
+<span class="kw">export async function</span> <span class="fn">middleware</span>(<span class="var">req</span>: NextRequest) {
+  <span class="kw">if</span> (req.nextUrl.pathname.startsWith(<span class="str">'/api'</span>)) {
+    <span class="kw">return</span> NextResponse.<span class="fn">rewrite</span>(...)
+  }
+}</div>
+                <div class="s3-answer" id="s3-answer">
+                  runs before <em>every request</em>. gates routing, auth, and rewrites<span class="s3-cursor" id="s3-cursor"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ SCENE 4 — CTA ════════════ -->
+  <div class="scene scene-4">
+    <div class="scene-content">
+      <div class="s4-kicker" id="s4-kicker">try it now →</div>
+      <div class="s4-url" id="s4-url">
+        github<b id="s4-accent">.soy.run</b>
+      </div>
+      <div class="s4-tagline" id="s4-tagline">
+        open any repo. chat instantly.
+      </div>
+      <div class="s4-features">
+        <div class="s4-feature" id="s4-f1"><span class="s4-feature-dot"></span>Claude</div>
+        <div class="s4-feature" id="s4-f2"><span class="s4-feature-dot"></span>GPT</div>
+        <div class="s4-feature" id="s4-f3"><span class="s4-feature-dot"></span>Copilot</div>
+        <div class="s4-feature" id="s4-f4"><span class="s4-feature-dot"></span>byok · browser-only</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ SCENE 5 — outro wordmark hold ════════════ -->
+  <div class="scene scene-5">
+    <div class="scene-content">
+      <div class="s5-wordmark" id="s5-word">
+        github<b id="s5-accent">.soy.run</b>
+      </div>
+      <div class="s5-tag" id="s5-tag">go ask <b>any</b> repo</div>
+    </div>
+  </div>
+
+  <!-- ───── Transition panels (4 wipes) ───── -->
+  <div class="transition-panel" id="trans-1"></div>
+  <div class="transition-panel" id="trans-2"></div>
+  <div class="transition-panel" id="trans-3"></div>
+  <div class="transition-panel" id="trans-4"></div>
+  <div class="transition-panel" id="trans-5"></div>
+
+  <!-- ───── Captions (lower-third, VO-synced) ───── -->
+  <div class="caption" id="cap-1">What if you could just ask a repo?</div>
+  <div class="caption mono" id="cap-2">Cloning. Installing. Configuring.</div>
+  <div class="caption" id="cap-3">Fifteen minutes before you read a single line.</div>
+  <div class="caption mono" id="cap-4">Swap one domain.</div>
+  <div class="caption" id="cap-5">github.com &nbsp;→&nbsp; github.soy.run</div>
+  <div class="caption" id="cap-6">A browser sandbox. Your AI sub. Their repo.</div>
+  <div class="caption mono" id="cap-7">Claude · GPT · Copilot &nbsp;— bring your own key.</div>
+  <div class="caption" id="cap-8">Open any repo. Chat instantly.</div>
+
+  <!-- ───── Grain + vignette on top ───── -->
+  <div class="grain" id="grain"></div>
+  <div class="vignette"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script>
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  const TOTAL = 52;
+
+  // ─── Ambient: grain + ghost drift (plays through entire duration) ───
+  tl.to("#grain", { scale: 1.015, duration: TOTAL / 2, ease: "sine.inOut", repeat: 1, yoyo: true }, 0);
+  tl.fromTo(".ghost-1", { x: -20, y: -10 }, { x: 14, y: 10, duration: TOTAL, ease: "sine.inOut" }, 0);
+  tl.fromTo(".ghost-2", { x: 15, y: 12 }, { x: -14, y: -10, duration: TOTAL, ease: "sine.inOut" }, 0);
+
+  // Helper — transition wipe (red diagonal panel, ~0.55s)
+  const wipe = (el, at, color) => {
+    tl.fromTo(el,
+      { x: "-130%", skewX: -6 },
+      { x: "110%", skewX: -6, duration: 0.55, ease: "expo.out",
+        backgroundColor: color || "#D24B2C" },
+      at);
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENE 0 — INTRO HOOK (0.0 – 8.0s)
+  // "what if you could just ask a repo?"
+  // calm fade up, long hold, no urgency
+  // ═══════════════════════════════════════════════════════════
+  tl.from("#s0-eye",  { y: -12, opacity: 0, duration: 0.9, ease: "power2.out" }, 0.6);
+  tl.from("#s0-head", { y: 36, opacity: 0, duration: 1.2, ease: "power3.out" }, 1.4);
+  tl.from("#s0-sub",  { y: 18, opacity: 0, duration: 0.9, ease: "power2.out" }, 2.9);
+
+  // Caption 1 fades in during head, out before transition
+  tl.fromTo("#cap-1", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 1.8);
+  tl.to("#cap-1", { opacity: 0, duration: 0.4, ease: "power2.in" }, 6.6);
+
+  // Hold scene-0 from ~4.5s → 7.45s (nearly 3s of stillness)
+
+  // ─── Transition 1 → Scene 1 ───
+  wipe("#trans-1", 7.45);
+  tl.set(".scene-0", { opacity: 0 }, 7.80);
+  tl.set(".scene-1", { opacity: 1 }, 7.80);
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENE 1 — THE PAIN (8.0 – 18.5s)
+  // slow terminal stamp: one line every ~0.8s, subtle error glow
+  // ═══════════════════════════════════════════════════════════
+  tl.from("#s1-label",    { y: -18, opacity: 0, duration: 0.7, ease: "power2.out" }, 8.10);
+  tl.from("#s1-headline", { y: 34, opacity: 0, duration: 1.0, ease: "power3.out" }, 8.55);
+  tl.from("#s1-terminal", { y: 50, opacity: 0, duration: 0.9, ease: "expo.out" },   9.40);
+
+  // Slower line-by-line — each line 0.8s apart, soft fade
+  tl.fromTo("#s1-l1", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power2.out" }, 10.30);
+  tl.fromTo("#s1-l2", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power2.out" }, 11.10);
+  tl.fromTo("#s1-l3", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power2.out" }, 11.90);
+  tl.fromTo("#s1-l4", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power2.out" }, 12.70);
+  tl.fromTo("#s1-l5", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power2.out" }, 13.50);
+  tl.fromTo("#s1-l6", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power2.out" }, 14.30);
+
+  // Single subtle error glow (no repeating flash)
+  tl.fromTo("#s1-l5",
+    { backgroundColor: "rgba(210,75,44,0)" },
+    { backgroundColor: "rgba(210,75,44,0.18)", duration: 0.35, ease: "power2.out", yoyo: true, repeat: 1 },
+    13.80);
+
+  // Captions 2 + 3
+  tl.fromTo("#cap-2", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 11.00);
+  tl.to("#cap-2", { opacity: 0, duration: 0.35, ease: "power2.in" }, 14.00);
+  tl.fromTo("#cap-3", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 14.40);
+  tl.to("#cap-3", { opacity: 0, duration: 0.35, ease: "power2.in" }, 17.60);
+
+  // Hold ~1.5s on full terminal
+
+  // ─── Transition 2 → Scene 2 ───
+  wipe("#trans-2", 17.95, "#D24B2C");
+  tl.set(".scene-1", { opacity: 0 }, 18.30);
+  tl.set(".scene-2", { opacity: 1 }, 18.30);
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENE 2 — THE SWAP (18.5 – 29.0s)
+  // keystone moment. let each stage sit. no rapid overshoots.
+  // ═══════════════════════════════════════════════════════════
+  tl.from("#s2-kicker",     { y: -14, opacity: 0, duration: 0.7, ease: "power2.out" }, 18.55);
+  tl.from("#s2-old-prefix", { y: 44, opacity: 0, duration: 0.8, ease: "power3.out" }, 19.20);
+  tl.from("#s2-old-domain", { y: 44, opacity: 0, duration: 0.8, ease: "power3.out" }, 19.35);
+  tl.from("#s2-old-path",   { y: 44, opacity: 0, duration: 0.8, ease: "power3.out" }, 19.50);
+
+  // Hold ~1.2s on the old URL before the scratch
+
+  // Scratch across .com (deliberate, single motion)
+  tl.to("#s2-scratch",    { scaleX: 1, duration: 0.45, ease: "power4.out" }, 21.40);
+  tl.to("#s2-old-domain", { color: "#7A6E5A", duration: 0.5, ease: "power2.out" }, 21.55);
+
+  // Arrow drops in
+  tl.from("#s2-arrow", { y: -24, opacity: 0, duration: 0.5, ease: "power2.out" }, 22.30);
+
+  // New URL assembles — slower stagger
+  tl.from("#s2-new-prefix", { y: 32, opacity: 0, duration: 0.55, ease: "power3.out" }, 23.10);
+  tl.from("#s2-new-path",   { y: 32, opacity: 0, duration: 0.55, ease: "power3.out" }, 23.20);
+
+  // .soy.run stamp — the moment
+  tl.from("#s2-new-domain",
+    { scale: 0.55, opacity: 0, rotate: -6, duration: 0.7, ease: "back.out(2.2)" },
+    23.55);
+  tl.to("#s2-stamp",
+    { opacity: 0.85, scale: 1, rotate: -1.5, duration: 0.55, ease: "back.out(2.0)" },
+    23.95);
+
+  // Punchline, after a beat of silence
+  tl.from("#s2-punch", { y: 22, opacity: 0, duration: 0.7, ease: "power3.out" }, 25.30);
+
+  // Captions 4 + 5
+  tl.fromTo("#cap-4", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 20.20);
+  tl.to("#cap-4", { opacity: 0, duration: 0.35, ease: "power2.in" }, 22.80);
+  tl.fromTo("#cap-5", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 23.70);
+  tl.to("#cap-5", { opacity: 0, duration: 0.35, ease: "power2.in" }, 28.00);
+
+  // Hold ~2.2s
+
+  // ─── Transition 3 → Scene 3 ───
+  wipe("#trans-3", 28.45, "#0E7A54");
+  tl.set(".scene-2", { opacity: 0 }, 28.80);
+  tl.set(".scene-3", { opacity: 1 }, 28.80);
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENE 3 — PRODUCT (29.0 – 40.5s)
+  // one beat per interior element, ~0.9s apart
+  // ═══════════════════════════════════════════════════════════
+  tl.from("#s3-kicker",   { y: -14, opacity: 0, duration: 0.6, ease: "power2.out" }, 29.00);
+  tl.from("#s3-headline", { y: 26, opacity: 0, duration: 0.9, ease: "power3.out" }, 29.50);
+  tl.from("#s3-app",      { y: 40, opacity: 0, duration: 1.0, ease: "expo.out" },   30.30);
+
+  tl.from("#s3-q",      { x: 36, opacity: 0, duration: 0.6, ease: "power3.out" }, 31.50);
+  tl.from("#s3-avatar", { scale: 0.4, opacity: 0, duration: 0.5, ease: "back.out(2.0)" }, 32.50);
+  tl.from("#s3-thought",{ x: -20, opacity: 0, duration: 0.5, ease: "power3.out" }, 33.10);
+  tl.from("#s3-code",   { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, 34.10);
+  tl.from("#s3-answer", { y: 20, opacity: 0, duration: 0.6, ease: "power3.out" }, 35.40);
+
+  // One gentle thought pulse (not repeating)
+  tl.to("#s3-thought", { scale: 1.02, duration: 0.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 33.70);
+
+  // Cursor blink — slow
+  tl.to("#s3-cursor", { opacity: 0, duration: 0.4, ease: "steps(1)", repeat: 6, yoyo: true }, 36.20);
+
+  // Captions 6 + 7
+  tl.fromTo("#cap-6", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 30.80);
+  tl.to("#cap-6", { opacity: 0, duration: 0.35, ease: "power2.in" }, 34.20);
+  tl.fromTo("#cap-7", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 35.60);
+  tl.to("#cap-7", { opacity: 0, duration: 0.35, ease: "power2.in" }, 39.40);
+
+  // Hold ~1.5s on full product frame
+
+  // ─── Transition 4 → Scene 4 ───
+  wipe("#trans-4", 39.95, "#D24B2C");
+  tl.set(".scene-3", { opacity: 0 }, 40.30);
+  tl.set(".scene-4", { opacity: 1 }, 40.30);
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENE 4 — CTA (40.5 – 47.0s)
+  // url arrives once. settles. features populate one by one.
+  // ═══════════════════════════════════════════════════════════
+  tl.from("#s4-kicker",  { y: -14, opacity: 0, duration: 0.6, ease: "power2.out" }, 40.50);
+  tl.from("#s4-url",     { y: 50, opacity: 0, duration: 1.0, ease: "power4.out" }, 41.00);
+  tl.from("#s4-accent",  { scale: 0.7, opacity: 0, duration: 0.7, ease: "back.out(2.0)" }, 41.50);
+
+  tl.from("#s4-tagline", { y: 22, opacity: 0, duration: 0.7, ease: "power3.out" }, 42.30);
+
+  tl.from("#s4-f1", { y: 22, opacity: 0, duration: 0.5, ease: "power3.out" }, 43.10);
+  tl.from("#s4-f2", { y: 22, opacity: 0, duration: 0.5, ease: "power3.out" }, 43.35);
+  tl.from("#s4-f3", { y: 22, opacity: 0, duration: 0.5, ease: "power3.out" }, 43.60);
+  tl.from("#s4-f4", { y: 22, opacity: 0, duration: 0.5, ease: "power3.out" }, 43.85);
+
+  tl.fromTo("#cap-8", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 43.20);
+  tl.to("#cap-8", { opacity: 0, duration: 0.4, ease: "power2.in" }, 46.40);
+
+  // Hold ~2.5s on full CTA
+
+  // ─── Transition 5 → Scene 5 ───
+  wipe("#trans-5", 46.75, "#0E7A54");
+  tl.set(".scene-4", { opacity: 0 }, 47.10);
+  tl.set(".scene-5", { opacity: 1 }, 47.10);
+
+  // ═══════════════════════════════════════════════════════════
+  // SCENE 5 — OUTRO WORDMARK (47.1 – 52.0s)
+  // just the mark. hold. grain breathes.
+  // ═══════════════════════════════════════════════════════════
+  tl.from("#s5-word",   { y: 28, opacity: 0, duration: 1.0, ease: "power3.out" }, 47.20);
+  tl.from("#s5-accent", { scale: 0.8, opacity: 0, duration: 0.8, ease: "back.out(1.8)" }, 47.60);
+  tl.from("#s5-tag",    { y: 16, opacity: 0, duration: 0.7, ease: "power2.out" }, 48.30);
+
+  // Soft closing vignette swell
+  tl.to(".vignette", { opacity: 1.25, duration: 1.6, ease: "power2.in" }, 49.90);
+
+  // Hold ~2.4s on the wordmark — total ends at 52.0
+
+  window.__timelines["gitsandbox-hype"] = tl;
+
+  // Standalone preview — auto-play and loop when not running inside hyperframes.
+  // ?seek=<seconds> pauses at that timestamp for screenshotting.
+  if (!window.__hyperframes) {
+    const params = new URLSearchParams(location.search);
+    const seekTo = parseFloat(params.get("seek"));
+    if (!isNaN(seekTo)) {
+      tl.pause(seekTo);
+    } else {
+      tl.play();
+      tl.eventCallback("onComplete", () => {
+        gsap.set(
+          ["#trans-1","#trans-2","#trans-3","#trans-4","#trans-5",
+           "#cap-1","#cap-2","#cap-3","#cap-4","#cap-5","#cap-6","#cap-7","#cap-8"],
+          { clearProps: "all" });
+        tl.restart();
+      });
+    }
+  }
+</script>
+
+</body>
+</html>
