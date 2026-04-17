@@ -3,10 +3,20 @@ import remarkGfm from "remark-gfm";
 import type { OcMessage, OcPart } from "../hooks/useAgent";
 import { ToolCard } from "./ToolCard";
 import { Reasoning } from "./Reasoning";
+import { CopyButton } from "./CopyButton";
 
 interface ChatMessageProps {
   message: OcMessage;
   allMessages: OcMessage[];
+  extraActions?: React.ReactNode;
+}
+
+export function messageToText(message: OcMessage): string {
+  return message.parts
+    .filter((p) => p.type === "text")
+    .map((p) => p.text || "")
+    .join("\n")
+    .trim();
 }
 
 function findToolResult(
@@ -21,7 +31,7 @@ function findToolResult(
   return null;
 }
 
-export function ChatMessage({ message, allMessages }: ChatMessageProps) {
+export function ChatMessage({ message, allMessages, extraActions }: ChatMessageProps) {
   const { info, parts } = message;
 
   if (info.role === "tool") return null;
@@ -33,9 +43,13 @@ export function ChatMessage({ message, allMessages }: ChatMessageProps) {
       .join("\n");
 
     return (
-      <div className="flex justify-end animate-fade-in-up">
+      <div className="group flex flex-col items-end gap-1 animate-fade-in-up">
         <div className="max-w-[85%] rounded-2xl bg-zinc-800/90 px-4 py-2.5 text-[14.5px] leading-relaxed text-zinc-50 shadow-soft shadow-inset-hair ring-1 ring-zinc-700/50">
           <div className="whitespace-pre-wrap">{text}</div>
+        </div>
+        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <CopyButton getText={() => text} label="Copy message" />
+          {extraActions}
         </div>
       </div>
     );
@@ -47,8 +61,10 @@ export function ChatMessage({ message, allMessages }: ChatMessageProps) {
   const textParts = parts.filter((p) => p.type === "text");
   const toolCallParts = parts.filter((p) => p.type === "tool-call");
 
+  const assistantText = textParts.map((p) => p.text || "").join("\n").trim();
+
   return (
-    <div className="animate-fade-in-up">
+    <div className="group animate-fade-in-up">
       <div className="flex flex-col gap-2">
         {thinkingParts.map((p, i) => (
           <Reasoning
@@ -88,6 +104,15 @@ export function ChatMessage({ message, allMessages }: ChatMessageProps) {
             </ReactMarkdown>
           </div>
         ))}
+
+        {(assistantText || extraActions) && (
+          <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+            {assistantText && (
+              <CopyButton getText={() => assistantText} label="Copy response" />
+            )}
+            {extraActions}
+          </div>
+        )}
       </div>
     </div>
   );

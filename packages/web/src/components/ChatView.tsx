@@ -1,10 +1,24 @@
 import { useEffect, useRef } from "react";
-import { ChatMessage } from "./ChatMessage";
+import { ChatMessage, messageToText } from "./ChatMessage";
 import { ChatComposer } from "./ChatComposer";
 import { ModelProviderPicker } from "./ModelProviderPicker";
 import { StatusShimmer } from "./Shimmer";
 import { AuthPrompt } from "./AuthPrompt";
-import type { UseAgentReturn } from "../hooks/useAgent";
+import { CopyButton } from "./CopyButton";
+import type { UseAgentReturn, OcMessage } from "../hooks/useAgent";
+
+function transcriptText(messages: OcMessage[]): string {
+  return messages
+    .filter((m) => m.info.role === "user" || m.info.role === "assistant")
+    .map((m) => {
+      const text = messageToText(m);
+      if (!text) return "";
+      const speaker = m.info.role === "user" ? "User" : "Assistant";
+      return `${speaker}:\n${text}`;
+    })
+    .filter(Boolean)
+    .join("\n\n---\n\n");
+}
 
 interface ChatViewProps {
   agent: UseAgentReturn;
@@ -53,6 +67,15 @@ export function ChatView({ agent, repoLabel }: ChatViewProps) {
         className="smooth-scroll flex-1 overflow-y-auto"
       >
         <div className="mx-auto w-full max-w-3xl px-6 py-6">
+          {messages.length > 0 && (
+            <div className="mb-3 flex justify-end">
+              <CopyButton
+                getText={() => transcriptText(messages)}
+                label="Copy Full Transcript"
+                text="Copy Full Transcript"
+              />
+            </div>
+          )}
           {isEmpty && (
             <div className="flex min-h-[35vh] flex-col items-center justify-center text-center animate-fade-in">
               <div className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-3">
@@ -72,8 +95,21 @@ export function ChatView({ agent, repoLabel }: ChatViewProps) {
           )}
 
           <div className="flex flex-col gap-5">
-            {messages.map((msg) => (
-              <ChatMessage key={msg.info.id} message={msg} allMessages={messages} />
+            {messages.map((msg, idx) => (
+              <ChatMessage
+                key={msg.info.id}
+                message={msg}
+                allMessages={messages}
+                extraActions={
+                  idx === messages.length - 1 ? (
+                    <CopyButton
+                      getText={() => transcriptText(messages)}
+                      label="Copy Full Transcript"
+                      text="Copy Full Transcript"
+                    />
+                  ) : undefined
+                }
+              />
             ))}
           </div>
 
