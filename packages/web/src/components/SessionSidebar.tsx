@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type Session } from "../db";
 import { deleteSession } from "../db/sessions";
+import { buildSessionHref } from "../lib/urlTarget";
 
 interface SessionSidebarProps {
   activeSessionId?: number;
@@ -246,6 +247,15 @@ function SessionRow({
   const meta = repoMeta(session.repoUrl);
   const displayTitle = session.title?.trim() || meta.label;
   const [avatarFailed, setAvatarFailed] = useState(false);
+  const href =
+    session.id !== undefined
+      ? buildSessionHref({
+          sessionId: session.id,
+          owner: meta.owner,
+          repo: meta.repo,
+          branch: session.branch,
+        })
+      : meta.path;
 
   async function handleDelete(e: React.MouseEvent) {
     e.preventDefault();
@@ -253,13 +263,15 @@ function SessionRow({
     if (session.id === undefined) return;
     await deleteSession(session.id);
     if (active) {
-      window.location.href = "/";
+      // Navigate back to the bare repo/account URL so the active view resets
+      // into an empty "new chat" state.
+      window.location.href = meta.path;
     }
   }
 
   return (
     <a
-      href={meta.path}
+      href={href}
       onClick={(e) => {
         if (active) {
           e.preventDefault();

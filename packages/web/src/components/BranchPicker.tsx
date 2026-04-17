@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Marquee } from "./Marquee";
+import { githubAuthHeaders } from "../lib/githubAuth";
 
 interface BranchPickerProps {
   owner: string;
@@ -75,9 +76,11 @@ export function BranchPicker({ owner, repo, branch }: BranchPickerProps) {
     (async () => {
       try {
         const collected: string[] = [];
+        const headers = await githubAuthHeaders();
         for (let page = 1; page <= 3; page++) {
           const res = await fetch(
-            `https://api.github.com/repos/${owner}/${repo}/branches?per_page=100&page=${page}`
+            `https://api.github.com/repos/${owner}/${repo}/branches?per_page=100&page=${page}`,
+            { headers }
           );
           if (!res.ok) throw new Error(`GitHub ${res.status}`);
           const data = (await res.json()) as GhBranch[];

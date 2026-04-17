@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { githubAuthHeaders } from "../lib/githubAuth";
 
 interface GithubRepoCardProps {
   owner: string;
@@ -84,7 +85,7 @@ function useRepoMeta(owner: string, repo: string): MetaState<RepoMeta> {
       try {
         const res = await fetch(
           `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
-          { signal: ac.signal }
+          { signal: ac.signal, headers: await githubAuthHeaders() }
         );
         if (!res.ok) {
           setState({ status: "error" });
@@ -128,7 +129,7 @@ function useAccountMeta(owner: string): MetaState<AccountMeta> {
       try {
         const res = await fetch(
           `https://api.github.com/users/${encodeURIComponent(owner)}`,
-          { signal: ac.signal }
+          { signal: ac.signal, headers: await githubAuthHeaders() }
         );
         if (!res.ok) {
           setState({ status: "error" });

@@ -20,13 +20,7 @@ function ensureBuiltins(): void {
   builtinsRegistered = true;
 }
 
-export type ProviderId =
-  | "anthropic"
-  | "openai"
-  | "openai-codex"
-  | "google"
-  | "openrouter"
-  | "github-copilot";
+export type ProviderId = "openai-codex" | "github-copilot";
 
 export interface SupportedModel {
   provider: ProviderId;
@@ -44,23 +38,6 @@ export const SUPPORTED_MODELS: SupportedModel[] = [
   { provider: "openai-codex", modelId: "gpt-5.4", label: "Codex · GPT-5.4" },
   { provider: "openai-codex", modelId: "gpt-5.4-mini", label: "Codex · GPT-5.4 Mini" },
   { provider: "openai-codex", modelId: "gpt-5.3-codex", label: "Codex · GPT-5.3" },
-
-  // Anthropic (API key)
-  { provider: "anthropic", modelId: "claude-sonnet-4-5", label: "Claude Sonnet 4.5" },
-  { provider: "anthropic", modelId: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
-  { provider: "anthropic", modelId: "claude-haiku-4-5", label: "Claude Haiku 4.5" },
-
-  // OpenAI (API key)
-  { provider: "openai", modelId: "gpt-5.4", label: "GPT-5.4" },
-  { provider: "openai", modelId: "gpt-5.4-mini", label: "GPT-5.4 Mini" },
-
-  // Google (API key)
-  { provider: "google", modelId: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-  { provider: "google", modelId: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
-
-  // OpenRouter (API key)
-  { provider: "openrouter", modelId: "anthropic/claude-sonnet-4.5", label: "OR · Claude Sonnet 4.5" },
-  { provider: "openrouter", modelId: "openai/gpt-5.4", label: "OR · GPT-5.4" },
 ];
 
 export const COPILOT_MODEL_PRIORITY: string[] = [
@@ -78,7 +55,7 @@ export const CODEX_MODEL_PRIORITY: string[] = [
   "gpt-5.3-codex",
 ];
 
-export const DEFAULT_MODEL: SupportedModel = SUPPORTED_MODELS[2];
+export const DEFAULT_MODEL: SupportedModel = SUPPORTED_MODELS[0];
 
 const FORBIDDEN_BROWSER_HEADERS = new Set([
   "user-agent",

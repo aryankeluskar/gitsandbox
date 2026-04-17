@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Agent, AgentEvent } from "@mariozechner/pi-agent-core";
+import type { Agent, AgentEvent, AgentMessage } from "@mariozechner/pi-agent-core";
 import type {
   AssistantMessage,
   Message,
@@ -24,9 +24,19 @@ import { db } from "../db";
 import {
   createSession,
   deriveSessionTitle,
+  getSession,
   setSessionTitle,
   touchSession,
 } from "../db/sessions";
+import {
+  getSessionMessages,
+  replaceSessionMessages,
+} from "../db/messages";
+import {
+  getSessionIdFromUrl,
+  setSessionIdInUrl,
+  clearSessionIdInUrl,
+} from "../lib/urlTarget";
 import {
   ensureFreshCopilot,
   getCopilotBaseUrl,
@@ -37,6 +47,7 @@ import {
   ensureFreshCodex,
   type CodexCredentials,
 } from "../lib/codexOAuth";
+import { getGithubToken } from "../lib/githubAuth";
 
 const COPILOT_CRED_KEY = "COPILOT_OAUTH";
 const CODEX_CRED_KEY = "CODEX_OAUTH";
@@ -120,21 +131,8 @@ export interface UseAgentReturn {
   sessionId: number | undefined;
 }
 
-const PROVIDER_CRED_KEY: Record<string, string> = {
-  anthropic: "ANTHROPIC_API_KEY",
-  openai: "OPENAI_API_KEY",
-  google: "GOOGLE_API_KEY",
-  openrouter: "OPENROUTER_API_KEY",
-};
-
 async function checkConnectedProviders(): Promise<string[]> {
-  const entries = await Promise.all(
-    Object.entries(PROVIDER_CRED_KEY).map(async ([provider, key]) => {
-      const v = await getCredential(key);
-      return v && v.length > 0 ? provider : null;
-    })
-  );
-  const list = entries.filter((v): v is string => v !== null);
+  const list: string[] = [];
   const copilot = await getCopilotCreds();
   if (copilot) list.push("github-copilot");
   const codex = await getCodexCreds();
@@ -157,9 +155,7 @@ async function resolveApiKey(provider: string): Promise<string | undefined> {
     if (fresh.access !== creds.access) await saveCodexCreds(fresh);
     return fresh.access;
   }
-  const key = PROVIDER_CRED_KEY[provider];
-  if (!key) return undefined;
-  return await getCredential(key);
+  return undefined;
 }
 
 function messagesToParts(messages: Message[]): OcMessage[] {
@@ -238,17 +234,36 @@ function messagesToParts(messages: Message[]): OcMessage[] {
   return out;
 }
 
+function filterLlmMessages(messages: AgentMessage[]): Message[] {
+  return messages.filter(
+    (m): m is Message =>
+      m.role === "user" || m.role === "assistant" || m.role === "toolResult"
+  );
+}
+
 export type AgentTarget =
   | { kind: "repo"; owner: string; repo: string; branch?: string }
   | { kind: "account"; owner: string };
 
+function targetRepoUrl(target: AgentTarget): string {
+  return target.kind === "account"
+    ? `https://github.com/${target.owner}`
+    : `https://github.com/${target.owner}/${target.repo}`;
+}
+
+function targetSandboxId(target: AgentTarget): string {
+  return target.kind === "account"
+    ? target.owner
+    : `${target.owner}/${target.repo}`;
+}
+
+function targetBranch(target: AgentTarget): string | undefined {
+  return target.kind === "repo" ? target.branch : undefined;
+}
+
 const PROVIDER_PRIORITY: Record<string, number> = {
   "github-copilot": 0,
   "openai-codex": 1,
-  anthropic: 2,
-  openai: 3,
-  google: 4,
-  openrouter: 5,
 };
 
 function bestProvider(providers: string[]): string | undefined {
@@ -334,10 +349,6 @@ async function resolveModelOverrides(
 }
 
 const LOGOUT_CRED_KEY: Record<string, string> = {
-  anthropic: "ANTHROPIC_API_KEY",
-  openai: "OPENAI_API_KEY",
-  google: "GOOGLE_API_KEY",
-  openrouter: "OPENROUTER_API_KEY",
   "github-copilot": "COPILOT_OAUTH",
   "openai-codex": "CODEX_OAUTH",
 };
@@ -359,6 +370,8 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
   const subscribedRef = useRef<Agent | null>(null);
   const sessionIdRef = useRef<number | undefined>(undefined);
   const copilotBaseUrlRef = useRef<string | undefined>(undefined);
+  const persistingRef = useRef(false);
+  const pendingPersistRef = useRef(false);
 
   const syncProviders = useCallback(async (): Promise<string[]> => {
     const list = await checkConnectedProviders();
@@ -367,69 +380,110 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
     return list;
   }, []);
 
-  const subscribe = useCallback((agent: Agent) => {
-    if (subscribedRef.current === agent) return;
-    subscribedRef.current = agent;
-    agent.subscribe((ev: AgentEvent) => {
-      if (ev.type === "agent_start") setStatus("streaming");
-      if (
-        ev.type === "message_start" ||
-        ev.type === "message_update" ||
-        ev.type === "message_end" ||
-        ev.type === "turn_end" ||
-        ev.type === "agent_end"
-      ) {
-        const snap = agent.state.messages.filter(
-          (m) =>
-            m.role === "user" ||
-            m.role === "assistant" ||
-            m.role === "toolResult"
-        ) as Message[];
-        setMessages(messagesToParts(snap));
-      }
-      if (ev.type === "agent_end") {
-        setStatus(providersRef.current.length === 0 ? "needs_auth" : "idle");
-      }
-    });
+  /**
+   * Persist the agent's current transcript to Dexie for the active session.
+   * Serialized behind a flag so rapid-fire settle events coalesce instead of
+   * interleaving transactions.
+   */
+  const persistNow = useCallback(async () => {
+    const sid = sessionIdRef.current;
+    const agent = agentRef.current;
+    if (!sid || !agent) return;
+    if (persistingRef.current) {
+      pendingPersistRef.current = true;
+      return;
+    }
+    persistingRef.current = true;
+    try {
+      do {
+        pendingPersistRef.current = false;
+        const snapshot = agent.state.messages.slice();
+        await replaceSessionMessages(sid, snapshot);
+      } while (pendingPersistRef.current);
+    } catch (err) {
+      console.error("[gitsandbox] persist_messages_failed", err);
+    } finally {
+      persistingRef.current = false;
+    }
   }, []);
 
-  const rebuildAgent = useCallback(async (opts?: { skipModelPick?: boolean }): Promise<Agent | null> => {
-    const runtime = runtimeRef.current;
-    if (!runtime) return null;
-    const providers = providersRef.current;
+  const subscribe = useCallback(
+    (agent: Agent) => {
+      if (subscribedRef.current === agent) return;
+      subscribedRef.current = agent;
+      agent.subscribe((ev: AgentEvent) => {
+        if (ev.type === "agent_start") setStatus("streaming");
+        if (
+          ev.type === "message_start" ||
+          ev.type === "message_update" ||
+          ev.type === "message_end" ||
+          ev.type === "turn_end" ||
+          ev.type === "agent_end"
+        ) {
+          const snap = filterLlmMessages(agent.state.messages);
+          setMessages(messagesToParts(snap));
+        }
+        if (
+          ev.type === "message_end" ||
+          ev.type === "turn_end" ||
+          ev.type === "agent_end"
+        ) {
+          void persistNow();
+        }
+        if (ev.type === "agent_end") {
+          setStatus(providersRef.current.length === 0 ? "needs_auth" : "idle");
+        }
+      });
+    },
+    [persistNow]
+  );
 
-    if (!opts?.skipModelPick) {
-      modelRef.current = await pickModelForProviders(modelRef.current, providers);
-    }
+  const rebuildAgent = useCallback(
+    async (opts?: {
+      skipModelPick?: boolean;
+      seedMessages?: AgentMessage[];
+    }): Promise<Agent | null> => {
+      const runtime = runtimeRef.current;
+      if (!runtime) return null;
+      const providers = providersRef.current;
 
-    const modelOverrides = await resolveModelOverrides(modelRef.current);
-    copilotBaseUrlRef.current = modelOverrides?.baseUrl;
+      if (!opts?.skipModelPick) {
+        modelRef.current = await pickModelForProviders(modelRef.current, providers);
+      }
 
-    const sid = sessionIdRef.current;
-    if (sid !== undefined) {
-      db.sessions.update(sid, { provider: modelRef.current.provider }).catch(() => {});
-    }
+      const modelOverrides = await resolveModelOverrides(modelRef.current);
+      copilotBaseUrlRef.current = modelOverrides?.baseUrl;
 
-    const existingMessages = agentRef.current?.state?.messages ?? [];
+      const sid = sessionIdRef.current;
+      if (sid !== undefined) {
+        db.sessions
+          .update(sid, { provider: modelRef.current.provider })
+          .catch(() => {});
+      }
 
-    console.log("[gitsandbox] rebuildAgent", {
-      providers,
-      picked: modelRef.current,
-      baseUrl: modelOverrides?.baseUrl,
-      carriedMessages: existingMessages.length,
-    });
-    const agent = buildAgent({
-      runtime,
-      model: modelRef.current,
-      getApiKey: resolveApiKey,
-      modelOverrides,
-      existingMessages,
-    });
-    agentRef.current = agent;
-    subscribe(agent);
-    setActiveModel(modelRef.current);
-    return agent;
-  }, [subscribe]);
+      const existingMessages =
+        opts?.seedMessages ?? agentRef.current?.state?.messages ?? [];
+
+      console.log("[gitsandbox] rebuildAgent", {
+        providers,
+        picked: modelRef.current,
+        baseUrl: modelOverrides?.baseUrl,
+        carriedMessages: existingMessages.length,
+      });
+      const agent = buildAgent({
+        runtime,
+        model: modelRef.current,
+        getApiKey: resolveApiKey,
+        modelOverrides,
+        existingMessages,
+      });
+      agentRef.current = agent;
+      subscribe(agent);
+      setActiveModel(modelRef.current);
+      return agent;
+    },
+    [subscribe]
+  );
 
   const selectModel = useCallback(
     async (model: SupportedModel) => {
@@ -503,6 +557,8 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
       setStatus("loading");
       setBootStage("cloning");
       setMessages([]);
+      sessionIdRef.current = undefined;
+      setSessionId(undefined);
 
       try {
         const providers = await syncProviders();
@@ -512,13 +568,13 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
           target!.kind === "account"
             ? await createAccountRuntime({
                 owner: target!.owner,
-                getToken: async () => await getCredential("GITHUB_TOKEN"),
+                getToken: getGithubToken,
               })
             : await createRepoRuntime({
                 owner: target!.owner,
                 repo: target!.repo,
                 ref: target!.branch,
-                getToken: async () => await getCredential("GITHUB_TOKEN"),
+                getToken: getGithubToken,
               });
         if (cancelled) return;
         runtimeRef.current = runtime;
@@ -530,26 +586,44 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
           providers
         );
 
-        const repoUrl =
-          target!.kind === "account"
-            ? `https://github.com/${target!.owner}`
-            : `https://github.com/${target!.owner}/${target!.repo}`;
-        const sandboxId =
-          target!.kind === "account"
-            ? target!.owner
-            : `${target!.owner}/${target!.repo}`;
+        // Resolve the session id in the URL (if any) against the current target.
+        // A stale or cross-repo id is silently dropped: the URL is cleaned and
+        // the view falls back to an empty composer. No implicit creation here.
+        const repoUrl = targetRepoUrl(target!);
+        const branch = targetBranch(target!);
+        const urlSessionId = getSessionIdFromUrl();
+        let seededMessages: AgentMessage[] = [];
 
-        const session = await createSession({
-          repoUrl,
-          agent: "gitsandbox",
-          provider: modelRef.current.provider,
-          sandboxId,
+        if (urlSessionId !== undefined) {
+          const existing = await getSession(urlSessionId);
+          if (cancelled) return;
+          const matches =
+            existing &&
+            existing.repoUrl === repoUrl &&
+            (existing.branch ?? undefined) === (branch ?? undefined);
+          if (matches) {
+            sessionIdRef.current = existing!.id;
+            setSessionId(existing!.id);
+            try {
+              seededMessages = await getSessionMessages(existing!.id!);
+            } catch (err) {
+              console.error("[gitsandbox] load_messages_failed", err);
+              seededMessages = [];
+            }
+            if (cancelled) return;
+            const llm = filterLlmMessages(seededMessages);
+            setMessages(messagesToParts(llm));
+            // Touch so the loaded session bubbles to the top of the sidebar.
+            touchSession(existing!.id!).catch(() => {});
+          } else {
+            clearSessionIdInUrl();
+          }
+        }
+
+        await rebuildAgent({
+          skipModelPick: true,
+          seedMessages: seededMessages,
         });
-        if (cancelled) return;
-        sessionIdRef.current = session.id;
-        setSessionId(session.id);
-
-        await rebuildAgent({ skipModelPick: true });
         if (cancelled) return;
 
         setReady(true);
@@ -578,6 +652,32 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
     syncProviders,
   ]);
 
+  /**
+   * Create a session row for the current target on demand. Runs exactly once
+   * per mount: the first send creates; subsequent sends reuse `sessionIdRef`.
+   */
+  const ensureSession = useCallback(async (): Promise<number | undefined> => {
+    if (sessionIdRef.current !== undefined) return sessionIdRef.current;
+    if (!target) return undefined;
+
+    const repoUrl = targetRepoUrl(target);
+    const sandboxId = targetSandboxId(target);
+    const branch = targetBranch(target);
+
+    const session = await createSession({
+      repoUrl,
+      agent: "gitsandbox",
+      provider: modelRef.current.provider,
+      sandboxId,
+      branch,
+    });
+    if (session.id === undefined) return undefined;
+    sessionIdRef.current = session.id;
+    setSessionId(session.id);
+    setSessionIdInUrl(session.id);
+    return session.id;
+  }, [target]);
+
   const sendMessage = useCallback(
     async (text: string) => {
       const providers = await syncProviders();
@@ -605,16 +705,19 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
         return;
       }
 
-      if (sessionIdRef.current) {
-        touchSession(sessionIdRef.current).catch(() => {});
+      const sid = await ensureSession();
+      if (sid !== undefined) {
+        touchSession(sid).catch(() => {});
         const title = deriveSessionTitle(text);
         if (title) {
-          const sid = sessionIdRef.current;
-          db.sessions.get(sid).then((existing) => {
-            if (existing && !existing.title) {
-              setSessionTitle(sid, title).catch(() => {});
-            }
-          }).catch(() => {});
+          db.sessions
+            .get(sid)
+            .then((existing) => {
+              if (existing && !existing.title) {
+                setSessionTitle(sid, title).catch(() => {});
+              }
+            })
+            .catch(() => {});
         }
       }
 
@@ -627,7 +730,7 @@ export function useAgent(target: AgentTarget | null): UseAgentReturn {
         setStatus("error");
       }
     },
-    [rebuildAgent, syncProviders]
+    [ensureSession, rebuildAgent, syncProviders]
   );
 
   const abort = useCallback(() => {

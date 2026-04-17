@@ -30,3 +30,51 @@ export function extractTargetFromPath(pathname: string): UrlTarget {
 
   return { kind: "repo", owner, repo, branch };
 }
+
+/** Read the active session id from the `?s=` query param, if any. */
+export function getSessionIdFromUrl(): number | undefined {
+  if (typeof window === "undefined") return undefined;
+  const raw = new URLSearchParams(window.location.search).get("s");
+  if (!raw) return undefined;
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n <= 0) return undefined;
+  return n;
+}
+
+/** Write `?s=<id>` into the current URL without reloading. */
+export function setSessionIdInUrl(id: number): void {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  if (url.searchParams.get("s") === String(id)) return;
+  url.searchParams.set("s", String(id));
+  window.history.replaceState({}, "", url.toString());
+}
+
+/** Remove `?s=` from the current URL without reloading. */
+export function clearSessionIdInUrl(): void {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has("s")) return;
+  url.searchParams.delete("s");
+  window.history.replaceState({}, "", url.toString());
+}
+
+/**
+ * Build a sidebar href for a session. Always includes `?s=<id>` so clicking
+ * reloads into that exact session. Honors the branch when set and non-default.
+ */
+export function buildSessionHref(opts: {
+  sessionId: number;
+  owner: string;
+  repo?: string;
+  branch?: string;
+}): string {
+  const { sessionId, owner, repo, branch } = opts;
+  const base =
+    repo && branch && branch !== "main"
+      ? `/${owner}/${repo}/tree/${encodeURIComponent(branch)}`
+      : repo
+        ? `/${owner}/${repo}`
+        : `/${owner}`;
+  return `${base}?s=${sessionId}`;
+}

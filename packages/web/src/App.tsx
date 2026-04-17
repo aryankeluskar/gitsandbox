@@ -7,8 +7,10 @@ import { SessionSidebar } from "./components/SessionSidebar";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { Marquee } from "./components/Marquee";
 import { GithubRepoCard } from "./components/GithubRepoCard";
+import { GithubSignIn } from "./components/AuthPrompt";
 import { useAgent } from "./hooks/useAgent";
 import { extractTargetFromPath } from "./lib/urlTarget";
+import { GITHUB_CRED_KEY } from "./lib/githubOAuth";
 import { db } from "./db";
 
 interface SuggestedRepo {
@@ -34,6 +36,21 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
+  // Mandatory GitHub auth gate. Everything below this — including unauthed
+  // fetches to api.github.com from repo cards — waits until the user completes
+  // the device flow. `undefined` means the query hasn't resolved yet; we show
+  // a brief splash rather than flashing the gate.
+  const githubCred = useLiveQuery(
+    () => db.credentials.get(GITHUB_CRED_KEY),
+    [],
+  );
+  if (githubCred === undefined) {
+    return <AuthLoadingSplash />;
+  }
+  if (!githubCred) {
+    return <GithubGate />;
+  }
+
   const urlTarget = useMemo(
     () => extractTargetFromPath(window.location.pathname),
     []
@@ -55,8 +72,12 @@ export default function App() {
   const agent = useAgent(agentTarget);
 
   function handleNewSession() {
-    window.history.pushState({}, "", "/");
-    window.location.reload();
+    // Strip the session id from the URL and reload. Staying on the current
+    // repo (if any) is the right default - users usually want a fresh chat
+    // in the same context, not a jump back to the landing page.
+    const url = new URL(window.location.href);
+    url.searchParams.delete("s");
+    window.location.href = url.pathname + url.search + url.hash;
   }
 
   useEffect(() => {
@@ -466,6 +487,44 @@ function HomePage() {
             >
               just-bash
             </a>{" "}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AuthLoadingSplash() {
+  return (
+    <div className="flex h-screen items-center justify-center bg-zinc-950 text-zinc-600">
+      <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+    </div>
+  );
+}
+
+function GithubGate() {
+  return (
+    <div className="relative flex h-screen flex-col items-center justify-center bg-zinc-950 px-6 text-zinc-100">
+      <div aria-hidden className="pointer-events-none absolute inset-0 hero-glow" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 hero-grid" />
+
+      <div className="relative w-full max-w-md">
+        <div className="mb-8 text-center">
+          <h1 className="font-display text-4xl font-bold tracking-tight text-zinc-100 leading-none sm:text-5xl">
+            <span className="text-emerald-400 mr-1.5">git</span>
+            <span>sandbox</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-sm text-[13.5px] leading-relaxed text-zinc-400">
+            Sign in with GitHub to continue. We use this to read repo metadata
+            (and, if you pick Copilot later, to skip a second sign-in).
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
+          <GithubSignIn onAuthenticated={async () => { /* live query re-runs */ }} />
+          <p className="mt-3 text-center text-[11px] leading-relaxed text-zinc-600">
+            Scope: <code className="rounded bg-zinc-900 px-1 py-0.5 font-mono">read:user</code>.
+            Tokens live in your browser (IndexedDB).
           </p>
         </div>
       </div>

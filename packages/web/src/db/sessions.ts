@@ -3,6 +3,7 @@ import { db, type Session } from "./index";
 export async function createSession(
   fields: Pick<Session, "repoUrl" | "agent" | "sandboxId"> & {
     provider: string;
+    branch?: string;
   }
 ): Promise<Session> {
   const now = new Date();

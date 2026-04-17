@@ -1,27 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ProviderId, SupportedModel } from "../lib/agent";
 import { SUPPORTED_MODELS } from "../lib/agent";
-import { ApiKeyForm, CopilotSignIn } from "./AuthPrompt";
+import { CodexSignIn, CopilotSignIn } from "./AuthPrompt";
 
 const SUBSCRIPTION_PROVIDERS: ProviderId[] = [
   "github-copilot",
   "openai-codex",
 ];
 
-const API_PROVIDERS: ProviderId[] = [
-  "anthropic",
-  "openai",
-  "google",
-  "openrouter",
-];
-
 const PROVIDER_TITLE: Record<ProviderId, string> = {
   "github-copilot": "GitHub Copilot",
   "openai-codex": "ChatGPT · Codex",
-  anthropic: "Anthropic",
-  openai: "OpenAI",
-  google: "Google AI",
-  openrouter: "OpenRouter",
 };
 
 function modelsForProvider(p: ProviderId): SupportedModel[] {
@@ -37,7 +26,7 @@ interface ModelProviderPickerProps {
   locked?: boolean;
 }
 
-type AuthPanel = null | "copilot" | "apikey";
+type AuthPanel = null | "copilot" | "codex";
 
 export function ModelProviderPicker({
   activeModel,
@@ -86,13 +75,7 @@ export function ModelProviderPicker({
     return () => document.removeEventListener("pointerdown", onPointerDown, true);
   }, [open, authPanel, closeMenu]);
 
-  const shortLabel = useMemo(() => {
-    const id = activeModel.modelId;
-    const clean = id
-      .replace(/^anthropic\//, "")
-      .replace(/^openai\//, "");
-    return clean;
-  }, [activeModel]);
+  const shortLabel = useMemo(() => activeModel.modelId, [activeModel]);
 
   return (
     <div ref={rootRef} className="relative flex shrink-0 self-stretch">
@@ -142,12 +125,11 @@ export function ModelProviderPicker({
                 <CopilotSignIn onAuthenticated={handleAuthDone} autoStart />
               </div>
             )}
-            {authPanel === "apikey" && (
+            {authPanel === "codex" && (
               <div className="animate-fade-in mb-2 rounded-xl border border-zinc-800/80 bg-zinc-900/50 p-3">
-                <ApiKeyForm onAuthenticated={handleAuthDone} />
+                <CodexSignIn onAuthenticated={handleAuthDone} autoStart />
               </div>
             )}
-
             {SUBSCRIPTION_PROVIDERS.map((provider) => {
               const title = PROVIDER_TITLE[provider];
               const isConnected = connected.has(provider);
@@ -160,9 +142,9 @@ export function ModelProviderPicker({
                 >
                   <div className="flex min-h-10 items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <h3 className={`text-[12.5px] font-semibold ${provider === "openai-codex" && !isConnected ? "text-zinc-500" : "text-zinc-200"}`}>{title}</h3>
+                      <h3 className="text-[12.5px] font-semibold text-zinc-200">{title}</h3>
                       <p className="text-[10px] text-zinc-600">
-                        {isConnected ? "Connected" : provider === "openai-codex" ? "" : "Not connected"}
+                        {isConnected ? "Connected" : "Not connected"}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-1">
@@ -176,9 +158,13 @@ export function ModelProviderPicker({
                         </button>
                       )}
                       {!isConnected && provider === "openai-codex" && (
-                        <span className="rounded-full bg-zinc-800/80 px-2 py-0.5 text-[10px] font-medium text-zinc-500">
-                          coming very soon
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setAuthPanel((p) => (p === "codex" ? null : "codex"))}
+                          className="press focus-ring rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-medium text-zinc-900 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
+                        >
+                          {authPanel === "codex" ? "Close" : "Log in"}
+                        </button>
                       )}
                       {isConnected && (
                         <button
@@ -224,90 +210,22 @@ export function ModelProviderPicker({
               );
             })}
 
-            <section className="mb-1 rounded-xl border border-transparent px-2 py-1.5 transition-colors duration-200 hover:border-zinc-800/60 hover:bg-zinc-900/35">
-              <div className="flex min-h-10 items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <h3 className="text-[12.5px] font-semibold text-zinc-200">API keys</h3>
-                  <p className="mt-0.5 text-[10px] leading-relaxed text-zinc-600 text-pretty">
-                    Anthropic, OpenAI, Google AI, or OpenRouter — keys stay in your browser.
-                  </p>
-                  <p className="mt-1 text-[10px] text-zinc-500">
-                    {API_PROVIDERS.some((p) => connected.has(p))
-                      ? `Active: ${API_PROVIDERS.filter((p) => connected.has(p))
-                          .map((p) => PROVIDER_TITLE[p])
-                          .join(", ")}`
-                      : "No API keys saved"}
-                  </p>
+            <section className="mb-1 rounded-xl border border-transparent px-2 py-1.5">
+              <div className="flex min-h-10 items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-[12.5px] font-semibold text-zinc-500">Claude Pro / Max</h3>
+                  <p className="text-[10px] text-zinc-600">Direct Anthropic subscription sign-in</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setAuthPanel((p) => (p === "apikey" ? null : "apikey"))}
-                  className="press focus-ring shrink-0 rounded-lg border border-emerald-800/50 bg-emerald-950/40 px-2.5 py-1.5 text-[11px] font-medium text-emerald-200/90 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.2,0,0,1)] hover:border-emerald-700/60"
-                >
-                  {authPanel === "apikey" ? "Close" : "Add key"}
-                </button>
-              </div>
-
-              <div className="mt-2 space-y-3 border-t border-zinc-800/50 pt-2">
-                {API_PROVIDERS.map((provider) => {
-                  const isConnected = connected.has(provider);
-                  const models = modelsForProvider(provider);
-                  return (
-                    <div key={provider}>
-                      <div className="flex min-h-8 items-center justify-between gap-2">
-                        <span className="text-[11.5px] font-medium text-zinc-400">
-                          {PROVIDER_TITLE[provider]}
-                        </span>
-                        {isConnected ? (
-                          <button
-                            type="button"
-                            onClick={() => onLogout(provider)}
-                            className="press focus-ring rounded-md px-2 py-1 text-[10px] font-medium text-zinc-500 transition-[color,transform] duration-200 ease-[cubic-bezier(0.2,0,0,1)] hover:text-red-400"
-                          >
-                            Log out
-                          </button>
-                        ) : (
-                          <span className="text-[10px] text-zinc-600">—</span>
-                        )}
-                      </div>
-                      {isConnected && models.length > 0 && (
-                        <ul className="mt-1 space-y-0.5">
-                          {models.map((m) => {
-                            const sel =
-                              m.provider === activeModel.provider &&
-                              m.modelId === activeModel.modelId;
-                            return (
-                              <li key={`${m.provider}-${m.modelId}`}>
-                                <button
-                                  type="button"
-                                  disabled={locked}
-                                  onClick={async () => {
-                                    await onSelectModel(m);
-                                    closeMenu();
-                                  }}
-                                  className={`press focus-ring flex min-h-10 w-full items-center rounded-lg px-2 py-2 text-left text-[12.5px] transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.2,0,0,1)] disabled:opacity-40 ${
-                                    sel
-                                      ? "bg-emerald-600/15 font-medium text-emerald-200 ring-1 ring-emerald-700/40"
-                                      : "text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100"
-                                  }`}
-                                >
-                                  <span className="line-clamp-2 text-pretty">{m.label}</span>
-                                </button>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      )}
-                    </div>
-                  );
-                })}
+                <span className="shrink-0 rounded-full bg-zinc-800/80 px-2 py-0.5 text-[10px] font-medium text-zinc-500">
+                  coming very soon
+                </span>
               </div>
             </section>
           </div>
 
           <div className="border-t border-zinc-800/70 px-3 py-2">
             <p className="text-center text-[10px] leading-relaxed text-zinc-600 text-pretty">
-              Credentials stay in your browser. Log out clears stored tokens and keys for that provider.
+              Credentials stay in your browser. Log out clears stored tokens for that provider.
             </p>
           </div>
         </div>

@@ -11,9 +11,6 @@ interface SettingsPanelProps {
 }
 
 const CREDENTIAL_KEYS = [
-  { key: "ANTHROPIC_API_KEY", label: "Anthropic", placeholder: "sk-ant-..." },
-  { key: "OPENAI_API_KEY", label: "OpenAI", placeholder: "sk-..." },
-  { key: "GOOGLE_API_KEY", label: "Google AI", placeholder: "AIza..." },
   { key: "GITHUB_TOKEN", label: "GitHub Token", placeholder: "ghp_..." },
 ];
 
@@ -83,10 +80,10 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto px-6 py-5">
-            {/* API Keys */}
+            {/* Tokens */}
             <div>
               <h3 className="mb-1 text-[12px] font-semibold uppercase tracking-widest text-zinc-500">
-                API Keys
+                Tokens
               </h3>
               <p className="mb-4 text-[12px] text-zinc-600">
                 Stored only in this browser (IndexedDB). Never sent to our
